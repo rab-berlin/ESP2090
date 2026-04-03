@@ -23,3 +23,21 @@ Die Eingänge des Microtronic sind an je einen Ausgang eines ODER-Gatters (CD407
 ### Ausgänge 
 
 Die Ausgänge des Microtronic sind an je zwei Eingänge eines 74HCT244 angeschlossen. Dadurch wird ein Microtronic-Ausgang praktisch "verdoppelt" - ein Ausgang bleibt unabhängig nutzbar, kann also beliebige Peripherie ansteuern. Der andere Ausgang ist mit einem GPIO verbunden, sodass der ESP32 alle Veränderungen an den Ausgängen überwachen kann, ohne eventuell angeschlossene weitere Peripherie elektrisch zu stören. Es ist zu beachten, dass der 74HCT244 maximal 20 mA an seinen Ausgängen liefert - mehr sollte auch der Microtronic im Laufe seines Lebens (45 Jahre) niemals geliefert haben, wenn man seine Ausgänge nicht überlasten wollte. Für die Ansteuerung eines Transistors ist das mehr als ausreichend.
+
+## Was kann ich damit machen?
+
+Die einfache Antwort: alles. 
+
+Prinzipiell brauchst du nur ein passendes Python-Script auf der ESP-Seite, welches auf die Signale an den vier Ausgängen des Microtronic passend reagiert und - falls nötig - die richtigen Signale zur gewünschten Zeit an die Eingänge des Microtronic sendet. 
+
+Die ernüchternde Antwort: natürlich nicht alles, weil der Programmspeicher des 2090 eben doch nur 256 Befehle umfasst. Und die Anzahl der Register mit 16 (plus 16 Speicherregister) auch recht begrenzt ist.
+
+Der Spaß liegt wie immer darin, mit diesen Einschränkungen eben doch etwas zu schaffen, das "sinnvoll" und funktional ist.
+
+### Protokolle 
+
+Wenn du bisher noch nie etwas mit Protokollen zu tun haben wolltest (hast du aber, weil du gerade im Internet unterwegs bist) - jetzt solltest du damit anfangen, wenn du dem Microtronic die _Welt der Dinge_ zugänglich machen willst.
+
+Als einfaches Beispiel für ein Protokoll dient der "Bildschirm". Um alle 8x8 Pixel der LED-Matrix anzusteuern, werden die Speicherregister 0-F des Microtronic nacheinander auf die Ausgänge gelegt - also insgesamt 16 Nibbles, 64 Bit. Damit dies zu genau festgelegten Zeiten passiert, sendet der ESP zuerst einen Request (REQ), wartet auf eine Bestätigung (ACK) und liest dann alle 9 Millisekunden die Ausgänge - denn bei deaktivierter Anzeige benötigt der 2090 ziemlich genau 9 ms für die Ausführung einer Instruktion.
+
+Auf diese Weise können auch andere Protokolle zum Datenaustausch zwischen Microtronic und ESP32 realisiert werden. 
