@@ -78,3 +78,13 @@ Es gab in den Berliner Souvenirläden auch ein Tischmodell dieser Uhr zu kaufen 
 ![Berlinuhr](/pics/IMG_20260403_221740.jpg)
 
 Der Microtronic kann jetzt auch Berlin-Uhr! Wer kann die richtige Uhrzeit erkennen? 
+
+Das Programm dazu ist einfach. 
+
+Alles, was auf der LED-Matrix angezeigt werden soll, befindet sich in den Speicherregistern 0-F. Ein gesetztes Bit bedeutet, dass die entsprechende LED leuchet, ein nicht gesetztes Bit lässt die LED ausgeschaltet. Im Unterprogramm Frame werden die Werte in den Speicherregistern schnell hintereinander auf die Ausgänge gelegt. Der ESP liest diese Werte und steuert die LED-Matrix entsprechend. Für ein genaues Timing gibt es noch ein REQ-Signal vom ESP und ein ACK-Signal vom Microtronic.
+
+Standard ist übrigens, dass alle LEDs nur rot leuchten. Wenn gewünscht, kann man dem ESP2090-Studio über ein User-Skript vorher mitteilen, welche Farben die LEDs annehmen sollen, wenn sie eingeschaltet werden. 
+
+Im Hauptprogramm wird die Zeit mit TIME aktualisiert, dann die einzelnen Register mit Werten gefüllt und schließlich das Unterprogramm aufgerufen, um den Frame zu übermitteln. 
+
+Ohne ESP2090-Studio und LED-Matrix ist das Programm allerdings (optisch) wenig anprechend: Das Display wird abgeschaltet und danach passiert nix mehr, weil der Microtronic verzweifelt und vergeblich auf das REQ-Signal wartet.
