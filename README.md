@@ -102,6 +102,6 @@ Frame      DIN REQ-ACK-CLEAR           Auf REQ warten
 
 Standard ist übrigens, dass alle LEDs nur rot leuchten. Wenn gewünscht, kann man dem ESP2090-Studio über ein User-Skript vorher mitteilen, welche Farben die LEDs annehmen sollen, wenn sie eingeschaltet werden. 
 
-Im Hauptprogramm wird die Zeit mit TIME aktualisiert, dann die einzelnen Register mit Werten gefüllt und schließlich das Unterprogramm aufgerufen, um den Frame zu übermitteln. 
+Im Hauptprogramm wird die Zeit mit TIME aktualisiert, dementsprechend die einzelnen Speicherregister mit Werten gefüllt und schließlich das Unterprogramm aufgerufen, um den Frame zu übermitteln. 
 
-Ohne ESP2090-Studio und LED-Matrix ist das Programm allerdings (optisch) wenig anprechend: Das Display wird abgeschaltet und danach passiert nix mehr, weil der Microtronic verzweifelt und vergeblich auf das REQ-Signal wartet.
+Ohne ESP2090-Studio und LED-Matrix wirkt das Programm allerdings (optisch) wenig anprechend: Das Display wird abgeschaltet und danach passiert nix mehr, weil der Microtronic genauso verzweifelt wie vergeblich auf das REQ-Signal wartet.
