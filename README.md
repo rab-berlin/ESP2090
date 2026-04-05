@@ -84,20 +84,20 @@ Das Programm dazu ist einfach.
 Alles, was auf der LED-Matrix angezeigt werden soll, befindet sich in den Speicherregistern 0-F. Ein gesetztes Bit bedeutet, dass die entsprechende LED leuchet, ein nicht gesetztes Bit lässt die LED ausgeschaltet. Im Unterprogramm Frame werden die Werte in den Speicherregistern schnell hintereinander auf die Ausgänge gelegt. Der ESP liest diese Werte und steuert die LED-Matrix entsprechend. Für ein genaues Timing gibt es noch ein REQ-Signal vom ESP und ein ACK-Signal vom Microtronic.
 
 ```
-DIN REQ-ACK-CLEAR           Auf REQ warten
-ANDI #1,REQ-ACK-CLEAR	      .
-BRZ Frame	                  .
-DOT REQ-ACK-CLEAR	          ACK senden
-EXRL	                      Speicherregister 0-7 in Arbeitsregister holen
-DOT r0                      Alle Register 0-F als Nibble senden
-DOT r1                      .
-DOT r2                      .
-...                         .
-DOT rF                      .
-EXRL                        Speicherregister 0-7 wieder zurück
-MOVI #0,REQ-ACK-CLEAR	
-DOT REQ-ACK-CLEAR           Null auf Ausgänge legen
-RET	
+Frame      DIN REQ-ACK-CLEAR           Auf REQ warten
+           ANDI #1,REQ-ACK-CLEAR	      .
+           BRZ Frame	                  .
+           DOT REQ-ACK-CLEAR           ACK senden
+           EXRL                        Speicherregister 0-7 in Arbeitsregister holen
+           DOT r0                      Alle Register 0-F als Nibble senden
+           DOT r1                      .
+           DOT r2                      .
+           ...                         .
+           DOT rF                      .
+           EXRL                        Speicherregister 0-7 wieder zurück
+           MOVI #0,REQ-ACK-CLEAR	
+           DOT REQ-ACK-CLEAR           Null auf Ausgänge legen
+           RET	
 ```
 
 Standard ist übrigens, dass alle LEDs nur rot leuchten. Wenn gewünscht, kann man dem ESP2090-Studio über ein User-Skript vorher mitteilen, welche Farben die LEDs annehmen sollen, wenn sie eingeschaltet werden. 
