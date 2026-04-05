@@ -85,8 +85,8 @@ Alles, was auf der LED-Matrix angezeigt werden soll, befindet sich in den Speich
 
 ```
 Frame      DIN REQ-ACK-CLEAR           Auf REQ warten
-           ANDI #1,REQ-ACK-CLEAR	      .
-           BRZ Frame	                  .
+           ANDI #1,REQ-ACK-CLEAR       .
+           BRZ Frame                   .
            DOT REQ-ACK-CLEAR           ACK senden
            EXRL                        Speicherregister 0-7 in Arbeitsregister holen
            DOT r0                      Alle Register 0-F als Nibble senden
