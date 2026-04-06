@@ -79,7 +79,7 @@ Es gab in den Berliner Souvenirläden auch ein Tischmodell dieser Uhr zu kaufen 
 
 Der Microtronic kann jetzt auch Berlin-Uhr! Wer kann die richtige Uhrzeit erkennen? 
 
-Das Programm dazu ist einfach. 
+Das [Berlin-Uhr-Microtronic-Programm](https://github.com/rab-berlin/ESP2090/blob/main/programs/berlinuhr/berlin.mic) dazu ist einfach. 
 
 Alles, was auf der LED-Matrix angezeigt werden soll, befindet sich in den Speicherregistern 0-F. Ein gesetztes Bit bedeutet, dass die entsprechende LED leuchet, ein nicht gesetztes Bit lässt die LED ausgeschaltet. Im Unterprogramm Frame werden die Werte in den Speicherregistern schnell hintereinander auf die Ausgänge gelegt. Der ESP liest diese Werte und steuert die LED-Matrix entsprechend. Für ein genaues Timing gibt es noch ein REQ-Signal vom ESP und ein ACK-Signal vom Microtronic.
 
@@ -104,4 +104,4 @@ Standard ist übrigens, dass alle LEDs nur rot leuchten. Wenn gewünscht, kann m
 
 Im Hauptprogramm wird die Zeit mit TIME aktualisiert, dementsprechend die einzelnen Speicherregister mit Werten gefüllt und schließlich das Unterprogramm aufgerufen, um den Frame zu übermitteln. 
 
-Ohne ESP2090-Studio und LED-Matrix wirkt das Programm allerdings (optisch) wenig anprechend: Das Display wird abgeschaltet und danach passiert nix mehr, weil der Microtronic genauso verzweifelt wie vergeblich auf das REQ-Signal wartet.
+Ohne ESP2090-Studio und LED-Matrix wirkt das Programm allerdings (optisch) wenig anprechend: Das Display wird abgeschaltet und danach passiert nix mehr, weil der Microtronic genauso verzweifelt wie vergeblich auf das REQ-Signal wartet. Wer's ohne ESP2090-Studio prinzipiell mal testen will, muss einen Taster korrekt am Eingang 1 anschließen und kann dann verfolgen, wie der Microtronic bei jedem Tastendruck einen Frame über die Ausgänge sendet.
