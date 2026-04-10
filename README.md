@@ -111,3 +111,7 @@ Wer's ohne ESP2090-Studio prinzipiell mal testen will, muss einen Taster korrekt
 ### Microtronic goes Hollywood
 
 ...
+
+### [Game of Life](https://de.wikipedia.org/wiki/Conways_Spiel_des_Lebens)
+
+...
