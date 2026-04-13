@@ -118,7 +118,9 @@ Wer's ohne ESP2090-Studio prinzipiell mal testen will, muss einen Taster korrekt
 
 Ein paar Hinweise...
 
-Das Programm ist sehr rechenintensiv. Um die neue Generation eines einzelnen Registers zu berechnen, müssen etwa 220 Instruktionen abgearbeitet werden. Da der Microtronic mehr als doppelt so schnell rechnet, wenn das Display ausgeschaltet bleibt, ist DISOUT praktisch ein Muss. Dann braucht ein Befehl immer noch 9 ms, also sind 220 Befehle in 2 Sekunden durchlaufen. 
+Das Programm ist ziemlich rechenintensiv. Die Operationen selbst sind nicht komplex, innerhalb der Schleife werden eigentlich nur ein paar Bits hin- und hergeschoben, ein paar Register getauscht, ein bisschen addiert und verglichen. Aber die Menge macht´s... 
+
+Um die neue Generation eines einzelnen Registers zu berechnen, müssen etwa 220 Instruktionen abgearbeitet werden. Da der Microtronic mehr als doppelt so schnell rechnet, wenn das Display ausgeschaltet bleibt, ist DISOUT praktisch ein Muss. Dann braucht ein Befehl immer noch 9 ms, also sind 220 Befehle in 2 Sekunden durchlaufen. 
 
 Alle 16 Register werden somit innerhalb von 32 Sekunden berechnet. Nach vier, acht, zwölf und 16 Registern kommen noch (relativ aufwändige) Verschiebeoperationen dazu, so dass am Ende etwa 40 Sekunden für Berechnung und Anzeige einer kompletten Folgegeneration herausspringen. Ein ziemlich gemütlicher Bildschirmschoner.
 
