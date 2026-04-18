@@ -11,7 +11,7 @@ Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emu
 
 ## Materialliste (BOM)
 
-| Menge | Artikel | Preis (Ali 04/26) | Bemerkung |
+| Menge | Artikel | Preis<br>Ali 04/26 | Bemerkung |
 | ---: | :--- | ---: | :--- |
 | 1 | ESP32-C3 SuperMini | 1,70 | |
 | 1 | SN74HCT244 8-fach Treiber | 2,60 | (10 St.) |
