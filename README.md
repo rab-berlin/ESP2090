@@ -11,25 +11,26 @@ Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emu
 
 ## Materialliste (BOM)
 
-| Menge | Artikel | Preis (Ali 2026) | Bemerkung |
+| Menge | Artikel | Preis (Ali 04/26) | Bemerkung |
 | ---: | :--- | ---: | :--- |
-| 1 | ESP32-C3 SuperMini | 2,09 | |
-| 1 | SN74HCT244 8-fach Treiber | 2,00 | (für 10 Stück) |
-| 1 | CD4071 4-fach Oder-Gatter | 2,00 | (für 10 Stück) |
-| 2 | 4ch-2way-Levelshifter | 1,50 | (für 10 Stück, Bauform beachten) |
-| 1 | Buzzer, passiv | 1,50 | (für 10 Stück) |
-| 4 | Widerstand 470 Ohm | 1,00 | (für Sortiment Widerstände) |
+| 1 | ESP32-C3 SuperMini | 1,70 | |
+| 1 | SN74HCT244 8-fach Treiber | 2,60 | (10 St.) |
+| 1 | CD4071 4-fach Oder-Gatter | 1,70 | (10 St.) |
+| 2 | 4ch-2way-Levelshifter | 1,70 | (10 St., richtige Bauform beachten) |
+| 1 | Buzzer, passiv | 1,50 | (10 St.) |
+| 4 | Widerstand 470 Ohm | 2,00 | (Sortiment Widerstände 300 St.) |
 | 4 | Widerstand 10k Ohm | - | (s.o.) |
 | 1 | Widerstand 220 Ohm | - | (s.o.) |
 | 1 | Widerstand 100 Ohm | - | (s.o.) |
-| 2 | Kondensator 100 nF | 1,00 | (für Sortiment Kondensatoren) |
-| 1 | Pfostenleiste 2,54 mm | | (für Sortiment, benötigt: 4 x 7, 1 x 5, 1 x 3) |
-| 1 | Buchsenleiste 2,54 mm | | (für Sortiment, benötigt: 2 x 8 für ESP32, optional) |
-| 1 | IC-Sockel 14-polig | | (für CD4071, optional)
-| 1 | IC-Sockel 20-polig | | (für 74HCT244, optional) |
-| 18 | Metallösen 2,5 mm Innendurchmesser | 1,80 | (für 100 Stück, Stichwort: rivet, eyelet) |
-| 1 | Platine (PCB) | 9,00 | (für 5 Stück aus Fernost - alternativ von mir, falls noch da) |
+| 2 | Kondensator 100 nF | 2,30 | (Sortiment Kondensatoren 300 St.) |
+| 1 | Pfostenleiste 2,54 mm | 1,80 | (Sortiment male + female 20 St., benötigt male: 1 x 5, 1 x 3) |
+| 1 | Buchsenleiste 2,54 mm | - | (s.o., benötigt female: 2 x 8 für ESP32) |
+| 1 | IC-Sockel 14-polig | 2,20 | (Sortiment 66 St., für CD4071)
+| 1 | IC-Sockel 20-polig | - | (s.o., für 74HCT244) |
+| 18 | Metallösen 2,5 mm Innendurchmesser | 1,80 | (Sortiment 100 St., Stichwort: rivet, eyelet) |
+| 1 | Platine (PCB) | 9,00 | (5 St. aus Fernost - alternativ von mir, falls noch da) |
 | 1 | WS2812B-LED-Matrix 8x8 | 1,80 | |
+| 1 | Netzteil 5V 3A USB-C | 3,30 | |
 
 Wenn man das alles bei AliExpress bestellt, kommt man für unter 20 Euro weg - und hat danach noch viele Ersatzteile übrig :) 
 
