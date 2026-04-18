@@ -23,17 +23,19 @@ Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emu
 | 1 | Widerstand 220 Ohm | - | (s.o.) |
 | 1 | Widerstand 100 Ohm | - | (s.o.) |
 | 2 | Kondensator 100 nF | 1,00 | (für Sortiment Kondensatoren) |
-| 1 | Stiftleiste 2,54 mm | | |
-| 1 | Buchsenleiste 2,54 mm | | (für ESP32, wenn gewünscht) |
-| 1 | IC-Sockel 14-polig | | (für CD4071, wenn gewünscht)
-| 1 | IC-Sockel 20-polig | | (für 74HCT244, wenn gewünscht) |
-| 18 | Metallösen 2,5 mm Innendurchmesser | | |
-| 1 | Platine (PCB) | | |
+| 1 | Pfostenleiste 2,54 mm | | (für Sortiment, benötigt: 4 x 7, 1 x 5, 1 x 3) |
+| 1 | Buchsenleiste 2,54 mm | | (für Sortiment, benötigt: 2 x 8 für ESP32, optional) |
+| 1 | IC-Sockel 14-polig | | (für CD4071, optional)
+| 1 | IC-Sockel 20-polig | | (für 74HCT244, optional) |
+| 18 | Metallösen 2,5 mm Innendurchmesser | 1,80 | (für 100 Stück, Stichwort: rivet, eyelet) |
+| 1 | Platine (PCB) | 9,00 | (für 5 Stück aus Fernost - alternativ von mir, falls noch da) |
 | 1 | WS2812B-LED-Matrix 8x8 | 1,80 | |
 
 Wenn man das alles bei AliExpress bestellt, kommt man für unter 20 Euro weg - und hat danach noch viele Ersatzteile übrig :) 
 
-Wer es richtig schön will, druckt sich noch einen passenden Busch-Bauteilträger dazu aus. Daran arbeite ich noch...
+Du kannst natürlich ohne Sockel und Buchsenleiste alles direkt auf die Platine löten. Ich persönlich hab´s aber lieber flexibel - versuch mal, einen falsch eingelöteten oder nicht funktionierenden IC wieder auszulöten...
+
+Wer es richtig schön will, druckt sich noch einen passenden Busch-Bauteilträger dazu aus. ~~Daran arbeite ich noch...~~ SCAD- und STL-Datei. Zur Befestigung der Platine am Träger brauchst du vier winzige Schrauben M2 und passende Muttern.
 
 ## Warum nur, warum?
 
