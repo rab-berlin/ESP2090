@@ -1,6 +1,6 @@
 # Bring deinen Busch Microtronic 2090 ins 21. Jahrhundert!
 
-![ESP2099-Studio](/pics/IMG_20260417_185934~2.jpg)
+![ESP2090-Studio](/pics/IMG_20260417_185934~2.jpg)
 
 Wir schließen an die Ein- und Ausgänge des Microtronic 2090 einen [ESP32](https://de.wikipedia.org/wiki/ESP32) an, auf dem [MicroPython](https://micropython.org) läuft. Dadurch können wir beliebige Python-Programme laufen lassen, die mit dem 2090 kommunizieren. 
 
@@ -36,7 +36,7 @@ Die Preise sind von AliExpress. Wer das alles frisch ordert, kommt ohne Platine 
 
 Du kannst natürlich auch ohne IC-Sockel und Buchsenleisten alles direkt auf die Platine löten. Ich persönlich hab´s aber lieber flexibel - versuch mal, einen falsch eingelöteten oder nicht funktionierenden IC wieder auszulöten...
 
-Wer es richtig schön will, druckt sich noch einen passenden Busch-Bauteilträger dazu aus. ~~Daran arbeite ich noch...~~ [SCAD-](/3d/ESP2090 mit Zapfen.scad) und STL-Datei. Zur Befestigung der Platine am Träger brauchst du vier winzige Schrauben M2 und passende Muttern.
+Wer es richtig schön will, druckt sich noch einen passenden Busch-Bauteilträger dazu aus. ~~Daran arbeite ich noch...~~ ![SCAD-](/3d/ESP2090 mit Zapfen.scad) und STL-Datei. Zur Befestigung der Platine am Träger brauchst du vier winzige Schrauben M2 und passende Muttern.
 
 
 ## Warum nur, warum?
