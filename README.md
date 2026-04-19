@@ -74,11 +74,15 @@ Ich habe darauf geachtet, dass die Ein- und Ausgänge des Microtronic elektrisch
 
 ### Eingänge
 
-Die Eingänge des Microtronic sind an je einen Ausgang eines ODER-Gatters (CD4071) angeschlossen. Je ein Eingang eines ODER-Gatters ist mit einem GPIO des ESP32 verbunden, der andere Eingang des Gatters ist "frei" (kann also wie bisher als Eingang des 2090 genutzt werden). So können weiterhin beliebige Peripherie-Schaltungen an den Microtronic angeschlossen werden - ohne dass es zu elektrischer Beeinflussung durch den ESP32 kommt. Die Eingänge des 4071 sind extrem hochohmig, über Ströme muss man sich also keine Gedanken machen.
+Die Eingänge des Microtronic sind an je einen Ausgang eines ODER-Gatters (CD4071) angeschlossen. Je ein Eingang eines ODER-Gatters ist mit einem GPIO des ESP32 verbunden, der andere Eingang des Gatters ist "frei" (kann also wie bisher als Eingang des 2090 genutzt werden). So können weiterhin beliebige Peripherie-Schaltungen an den Microtronic angeschlossen werden - ohne dass es zu elektrischer Beeinflussung durch den ESP32 kommt. 
+
+Die Eingänge des 4071 sind extrem hochohmig, über Ströme muss man sich also keine Gedanken machen.
 
 ### Ausgänge 
 
-Die Ausgänge des Microtronic sind an je zwei Eingänge eines 74HCT244 angeschlossen. Dadurch wird ein Microtronic-Ausgang praktisch "verdoppelt" - ein Ausgang bleibt unabhängig nutzbar, kann also beliebige Peripherie ansteuern. Der andere Ausgang ist mit einem GPIO verbunden, sodass der ESP32 alle Veränderungen an den Ausgängen überwachen kann, ohne eventuell angeschlossene weitere Peripherie elektrisch zu stören. Es ist zu beachten, dass der 74HCT244 maximal 20 mA an seinen Ausgängen liefert. Mehr sollte man auch dem Microtronic niemals abverlangt haben, wenn man seine Ausgänge nicht überlasten wollte - laut Anleitungsbuch 2. Teil, S. 41: "maximal 15 mA". Für die Ansteuerung eines Transistors ist das vollkommen ausreichend.
+Die Ausgänge des Microtronic sind an je zwei Eingänge eines 74HCT244 angeschlossen. Dadurch wird ein Microtronic-Ausgang praktisch "verdoppelt" - eine Ausgangskopie bleibt unabhängig nutzbar, daran kann also wie bisher beliebige (Busch-)Peripherie angeschlossen werden. Die andere Ausgangskopie ist mit einem GPIO des ESP verbunden. Dadurch kann das ESP2090-Studio alle Veränderungen an den Ausgängen des Microtronic überwachen, ohne eventuell angeschlossene andere Peripherie elektrisch zu stören. 
+
+Es ist zu beachten, dass der 74HCT244 maximal 20 mA an seinen Ausgängen liefert. Mehr sollte man auch dem Microtronic niemals abverlangt haben, wenn man seine Ausgänge nicht überlasten wollte - laut Anleitungsbuch 2. Teil, S. 41: "maximal 15 mA". Für die Ansteuerung eines Transistors ist das vollkommen ausreichend.
 
 ## Was kann ich damit machen?
 
