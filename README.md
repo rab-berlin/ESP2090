@@ -28,7 +28,7 @@ Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emu
 | 1 | IC-Sockel 14-polig | 2,20 | (Sortiment 66 St., für CD4071)
 | 1 | IC-Sockel 20-polig | - | (s.o., für 74HCT244) |
 | 18 | Metallösen 2,5 mm Innendurchmesser | 1,80 | (Sortiment 100 St., Stichwort: rivet, eyelet) |
-| 1 | Platine (PCB) | 9,00 | (5 St. aus Fernost - oder von mir, falls noch da) |
+| 1 | [Platine (PCB)](https://github.com/rab-berlin/ESP2090/tree/main/gerbers) | 9,00 | (5 St. aus Fernost - oder von mir, falls noch da) |
 | 1 | WS2812B-LED-Matrix 8x8 | 1,80 | |
 | 1 | Netzteil 5V 3A USB-C | 3,30 | |
 
