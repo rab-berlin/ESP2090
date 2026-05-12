@@ -2,9 +2,11 @@
 
 ![ESP2090-Studio](/pics/ESP2090_Baustein_oben.jpg)
 
-Wir schließen an die Ein- und Ausgänge des Microtronic 2090 einen [ESP32](https://de.wikipedia.org/wiki/ESP32) an, auf dem [MicroPython](https://micropython.org) läuft. Dadurch können wir beliebige Python-Programme laufen lassen, die mit dem 2090 kommunizieren. 
+ESP2090 verbindet den klassischen Lerncomputer Busch Microtronic 2090 mit einem modernen ESP32. Das ESP2090-Studio erweitert den Microtronic um flexible, programmierbare Peripherie.
 
-Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emulator, Tongenerator, beliebige Sensoren, Internet-Anbindung bis hin zu einem 8x8-Matrix-LED-"Bildschirm" für den Microtronic - über die Weboberfläche lässt sich alles konfigurieren und steuern. 
+Der Grundgedanke ist einfach: Der Microtronic bleibt das originale 4-Bit-System – das ESP2090-Studio sorgt dafür, dass er plötzlich Dinge kann, die er ursprünglich nie konnte, ohne ihn selbst zu ersetzen. Wir verbinden dafür die Ein- und Ausgänge des Microtronic mit einem [ESP32](https://de.wikipedia.org/wiki/ESP32), auf dem [MicroPython](https://micropython.org) läuft. So können benutzerdefinierte Python-Programme über festgelegte Funktionen und Protokolle mit dem Microtronic interagieren. 
+
+Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emulator, Tongenerator, beliebige Sensoren, Internet-Anbindung bis hin zu einem 8x8-Matrix-LED-"Bildschirm" für den Microtronic - über die Weboberfläche des ESP2090-Studios lässt sich alles konfigurieren und steuern. 
 
 ![Webscreen](/pics/ESP2090_Desktop.jpg)
 
@@ -52,13 +54,13 @@ Daher habe ich dann einen Raspberry Pi Zero W eingesetzt. Ein Python-Skript und 
 
 Für einige dieser neuen Programme wiederum benötigte ich manchmal auch Peripherie am Microtronic, die ich nicht immer mit Busch-Baukästen umsetzen konnte (oder wollte). Das erledigte zuerst ein Arduino Nano mit entsprechendem C-Programm, anschließend übernahm der Pi auch diese Aufgabe.
 
-Der Raspberry Pi (also auch der von mir verwendete Zero) ist im Prinzip ein vollwertiger Computer mit Linux-Betriebssystem. Damit konnte ich natürlich alle Peripherie-Aufgaben bequem erledigen, und der Pi wäre auch eine bestens geeignete Hardware-Grundlage für alle weiteren Vorhaben gewesen. Irgendwie störte mich aber der Gedanke, dass zwischen dem Microtronic und dem Pi ein so großes _intellektuelles Gefälle_ herrschte. Ich wollte, dass sich zwei Microcontroller miteinander "auf Augenhöhe" unterhalten - wenn auch mit gerade mal 45 Jahren Altersunterschied. 
+Der Raspberry Pi (also auch der von mir verwendete Zero) ist im Prinzip ein vollwertiger Computer mit Linux-Betriebssystem. Damit konnte ich natürlich alle Peripherie-Aufgaben bequem erledigen, und der Pi wäre auch eine bestens geeignete Hardware-Grundlage für alle weiteren Vorhaben gewesen. Irgendwie störte mich aber der Gedanke, dass zwischen dem Microtronic und dem Pi ein so großes _intellektuelles Gefälle_ herrschte. Ich wollte stattdessen, dass sich zwei Microcontroller "auf Augenhöhe" miteinander unterhalten - wenn auch mit 45 Jahren Altersunterschied. 
 
-Was mich außerdem störte, ist die Preisentwicklung bei der Raspberry Pi Foundation. Es fing mal an als Experimentiercomputer zu einem Preis, den sich jeder lernwillige Einsteiger leisten konnte. Inzwischen werden teilweise Preise von 200 Euro für einen Pi aufgerufen. Obwohl es sicher gute Gründe dafür geben mag, ist das (für mich) nicht mehr unterstützenswert.
+Was mich außerdem störte, ist die Preisentwicklung bei der Raspberry Pi Foundation. Es fing mal an als Experimentiercomputer zu einem Preis, den sich jeder lernwillige Einsteiger leisten konnte. Inzwischen werden teilweise Preise von 200 Euro für einen ausgebauten Pi aufgerufen. Obwohl es sicher gute Gründe dafür geben mag, ist das (für mich) nicht mehr unterstützenswert.
 
 Die Leitidee sollte sein: Mit so wenig wie möglich so viel wie möglich erreichen. 
 
-Meine Wahl fiel dann auf den ESP32 - nicht zuletzt, weil ich vorher schon öfter den Vorgänger ESP8266 in der Arduino-Umgebung benutzt habe. Der erste Gedanke war dann auch, dem ESP alles, was er wissen muss, in C beizubringen, um als idealer peripherer Begleiter für den Microtronic zu dienen. Einige gedankliche Iterationen später war die Frage dann aber: Wäre es nicht noch schöner, wenn man zur Laufzeit neue Ideen testen könnte, ohne die Firmware über die Arduino-IDE jeweils neu programmieren und flashen zu müssen? Wenn man also beliebige User-Skripte zur Laufzeit direkt aufrufen und ausführen könnte? 
+Meine Wahl fiel dann auf den ESP32 - nicht zuletzt, weil ich den Vorgänger ESP8266 in der Arduino-Umgebung schon öfter benutzt hatte. Der erste Gedanke war dann auch, dem ESP alles, was er wissen muss, in C beizubringen, um als idealer peripherer Begleiter für den Microtronic zu dienen. Einige gedankliche Iterationen später war die Frage dann aber: Wäre es nicht noch schöner, wenn man zur Laufzeit neue Ideen testen könnte, ohne die Firmware über die Arduino-IDE jeweils neu programmieren und flashen zu müssen? Wenn man also beliebige User-Skripte zur Laufzeit direkt aufrufen und ausführen könnte? 
 
 C und Arduino-IDE fielen damit raus. Python rückte ins Zentrum, weil es zur Laufzeit interpretiert wird, und der Microtronic sowieso kein Geschwindigkeitsmonster ist. Genauer gesagt, die Wahl fiel auf MicroPython - womit die Ideen letztlich alle umsetzbar schienen. Und außerdem wollte ich mal wieder was neues lernen.
 
@@ -70,19 +72,19 @@ Die [Schaltung des ESP2090-Studios](https://github.com/rab-berlin/ESP2090/blob/m
 
 Der ESP32 arbeitet mit 3,3 Volt Betriebsspannung, der Microtronic hingegen mit 5 Volt (genauer gesagt: sogar 5,7 Volt - nachmessen!). Daher sind in den Signalwegen jeweils Levelshifter eingebaut. Da wir es mit verhältnismäßig langsamen Signalen im Bereich von Millisekunden zu tun haben, muss man über die Schaltgeschwindigkeit der Levelshifter nicht besonders intensiv nachdenken. Billige Teile aus China funktionieren gut.
 
-Ich habe darauf geachtet, dass die Ein- und Ausgänge des Microtronic elektrisch vom ESP entkoppelt sind, das heißt, sie sollten auch bei gleichzeitigem Anschluss des ESP2090-Studios nach wie vor nutzbar bleiben, falls z.B. weitere Peripherie aus dem Busch-Sortiment verwendet wird.
+Ich habe darauf geachtet, dass die Ein- und Ausgänge des Microtronic elektrisch vom ESP entkoppelt sind, das heißt, sie sollten auch bei gleichzeitigem Anschluss des ESP2090-Studios nach wie vor nutzbar bleiben, falls z.B. weitere Peripherie aus dem Busch-Sortiment verwendet wird. Für diese Entkopplung werden zwei ICs eingesetzt, ein CD4071 und ein 74HCT244.
 
 ### Eingänge
 
-Die Eingänge des Microtronic sind an je einen Ausgang eines ODER-Gatters (CD4071) angeschlossen. Je ein Eingang eines ODER-Gatters ist mit einem GPIO des ESP32 verbunden, der andere Eingang des Gatters ist "frei" (kann also wie bisher als Eingang des 2090 genutzt werden). So können weiterhin beliebige Peripherie-Schaltungen an den Microtronic angeschlossen werden - ohne dass es zu elektrischer Beeinflussung durch den ESP32 kommt. 
+Jeder Eingang des Microtronic ist an je einen Ausgang eines ODER-Gatters (CD4071) angeschlossen. Je ein Eingang eines ODER-Gatters ist mit einem GPIO des ESP32 verbunden, der andere Eingang des Gatters ist "frei" (kann also wie bisher als Eingang des 2090 genutzt werden). So können weiterhin beliebige Peripherie-Schaltungen an den Microtronic angeschlossen werden - ohne dass es zu elektrischer Beeinflussung durch den ESP32 kommt. 
 
 Die Eingänge des 4071 sind extrem hochohmig, über Ströme muss man sich also keine Gedanken machen.
 
 ### Ausgänge 
 
-Die Ausgänge des Microtronic sind an je zwei Eingänge eines 74HCT244 angeschlossen. Dadurch wird ein Microtronic-Ausgang praktisch "verdoppelt" - eine Ausgangskopie bleibt unabhängig nutzbar, daran kann also wie bisher beliebige (Busch-)Peripherie angeschlossen werden. Die andere Ausgangskopie ist mit einem GPIO des ESP verbunden. Dadurch kann das ESP2090-Studio alle Veränderungen an den Ausgängen des Microtronic überwachen, ohne eventuell angeschlossene andere Peripherie elektrisch zu stören. 
+Jeder Ausgang des Microtronic ist an je zwei Eingänge eines 74HCT244 angeschlossen. Dadurch wird ein Microtronic-Ausgang praktisch "verdoppelt" - eine Ausgangskopie bleibt unabhängig nutzbar, daran kann also wie bisher beliebige (Busch-)Peripherie angeschlossen werden. Die andere Ausgangskopie ist mit einem GPIO des ESP verbunden. Dadurch kann das ESP2090-Studio alle Veränderungen an den Ausgängen des Microtronic überwachen, ohne eventuell angeschlossene andere Peripherie elektrisch zu stören. 
 
-Es ist zu beachten, dass der 74HCT244 maximal 20 mA an seinen Ausgängen liefert. Mehr sollte man auch dem Microtronic niemals abverlangt haben, wenn man seine Ausgänge nicht überlasten wollte - laut Anleitungsbuch 2. Teil, S. 41: "maximal 15 mA". Für die Ansteuerung eines Transistors ist das vollkommen ausreichend.
+Es ist zu beachten, dass der 74HCT244 maximal 20 mA an seinen Ausgängen liefert. Mehr sollte man auch dem Microtronic niemals abverlangt haben, wenn man seine Ausgänge nicht überlasten wollte - laut Anleitungsbuch 2. Teil, S. 41: "maximal 15 mA". Wer mehr will oder braucht, steuert mit dem Ausgang wie üblich erstmal einen Transistor an.
 
 ## Was kann ich damit machen?
 
