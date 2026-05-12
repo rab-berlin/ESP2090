@@ -2,7 +2,7 @@
 
 ![ESP2090-Studio](/pics/ESP2090_Baustein_oben.jpg)
 
-ESP2090 verbindet den klassischen Lerncomputer Busch Microtronic 2090 mit einem modernen ESP32. Das ESP2090-Studio erweitert den Microtronic um flexible, programmierbare Peripherie.
+Das ESP2090-Studio verbindet den klassischen Lerncomputer Busch Microtronic 2090 mit einem modernen ESP32. ESP2090 erweitert den Microtronic um flexible, programmierbare Peripherie.
 
 Der Grundgedanke ist einfach: Der Microtronic bleibt das originale 4-Bit-System – das ESP2090-Studio sorgt dafür, dass er plötzlich Dinge kann, die er ursprünglich nie konnte, ohne ihn selbst zu ersetzen. Wir verbinden dafür die Ein- und Ausgänge des Microtronic mit einem [ESP32](https://de.wikipedia.org/wiki/ESP32), auf dem [MicroPython](https://micropython.org) läuft. So können benutzerdefinierte Python-Programme über festgelegte Funktionen und Protokolle mit dem Microtronic interagieren. 
 
