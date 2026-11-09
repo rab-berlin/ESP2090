@@ -27,7 +27,7 @@ Ein paar Hinweise aus der Praxis:
 
 - **Nicht auf feste Zeiten bauen.** Mit eingeschalteter Anzeige ist der 2090 langsamer, und auch der ESP hat nebenbei zu tun (Webserver). Lieber warten, bis sich etwas ändert, als eine bestimmte Zeit abzuzählen. Feste Zeiten braucht nur die [LED-Matrix](LED-Matrix.md), die deshalb in der Firmware eingebaut ist.
 - **Ruhezustand 0.** Wenn alle Ausgänge auf 0 stehen, „sagt niemand etwas“. Wer einen Wert gesendet hat, setzt am Ende wieder 0.
-- **Matrix und Userscript nicht gleichzeitig an denselben Leitungen.** Die LED-Matrix benutzt Eingang 1 (Anfrage) und alle vier Ausgänge. Wer die Matrix eingeschaltet hat („LED on“), sollte kein Userscript laufen lassen, das ebenfalls darauf hört oder Eingang 1 setzt. Auch während eines MIC-Uploads sind die Eingänge belegt.
+- **Matrix und Userscript nicht gleichzeitig an denselben Leitungen.** Die LED-Matrix benutzt Eingang 1 (Anfrage) und alle vier Ausgänge. Wer die Matrix eingeschaltet hat („LED on“), sollte kein Userscript laufen lassen, das ebenfalls darauf hört oder Eingang 1 setzt.
 
 ## Regeln für Userscripts
 
@@ -118,5 +118,3 @@ while True:
 ```
 
 Auf diesem Muster lässt sich vieles aufbauen: Messwerte von einem Sensor, die Uhrzeit aus dem Internet, ein zweites Nibble für größere Zahlen (einfach zweimal fragen) …
-
-Alle drei Beispiele sind in einer Simulation geprüft, in der ein nachgebildeter 2090 (ein Befehl je 9,3 ms und zum Vergleich je 30 ms) und das Userscript zusammen laufen.
