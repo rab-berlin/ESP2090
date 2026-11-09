@@ -1,6 +1,6 @@
 ESP2090 STUDIO - INSTALLATION AUF EINEM NEUEN ESP32-C3 SUPERMINI
 ==================================================================
-Paket-Version 5 vom 09.11.2026 (Firmware v1.5, ohne WLAN-Zugangsdaten)
+Stand 09.11.2026 (ohne WLAN-Zugangsdaten)
 
 
 INHALT DES PAKETS

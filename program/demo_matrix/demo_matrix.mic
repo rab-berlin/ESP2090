@@ -1,5 +1,4 @@
-; demo_matrix - zeigt die Zeichenbefehle der LED-Matrix (Protokoll v2, Firmware ab v1.4)
-;  Quelltext mit Sprungmarken und Mnemonics: demo_matrix.src
+; demo_matrix - zeigt die Zeichenbefehle der LED-Matrix
 ; 
 ;  Bedienung: Programm starten, "LED Start" in der Weboberflaeche, dann jede Taste
 ;  am 2090 zeigt die naechste Vorfuehrung. Beim Warten auf die Taste zeigt die Anzeige
@@ -35,7 +34,7 @@ BBC ; 0C                CALL punkt
 BA2 ; 0D                CALL taste
 142 ; 0E                MOVI #4,X           gruen
 BB8 ; 0F                CALL farbe
-112 ; 10                MOVI #1,X           Cursor 1 = (1,1), stumm (Art 0: nur Farbebene)
+112 ; 10                MOVI #1,X           Cursor 1 = (1,1), stumm (Art 0: nur Farbmatrix)
 113 ; 11                MOVI #1,Y
 BBC ; 12                CALL punkt
 1E2 ; 13                MOVI #E,X           Cursor 2 = (6,5)

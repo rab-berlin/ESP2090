@@ -40,7 +40,7 @@ Vor dem Start prüft der ESP das Script und startet es nicht, wenn eine `while`-
 
 ## Beispiele
 
-Zu jedem Beispiel gehört ein Programm für den 2090 (`.mic` zum Hochladen mit **Upload**, `.src` als Quelltext mit Kommentaren) und ein Userscript (`.py`). Die Programme sind kurz genug, um sie auch von Hand einzutippen.
+Zu jedem Beispiel gehört ein Programm für den 2090 (`.mic`, ausführlich kommentiert, zum Hochladen mit **Upload**) und ein Userscript (`.py`). Die Programme sind kurz genug, um sie auch von Hand einzutippen.
 
 **So startest du ein Beispiel:** Den Inhalt der `.py`-Datei in den Editor der Weboberfläche kopieren, unter einem Namen speichern (z. B. `ton.py`) und mit **Run** starten. Dann das Programm zum 2090 übertragen und dort starten. Die Matrix muss dabei aus sein.
 

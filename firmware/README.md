@@ -1,4 +1,4 @@
-Die _"Firmware"_ für das ESP2090-Studio (Stand: **v1.5**, 09.11.2026) besteht aus:
+Die _"Firmware"_ für das ESP2090-Studio besteht aus:
 - [MicroPython](https://micropython.org/download/ESP32_GENERIC_C3), installiert auf dem ESP32-C3 (erprobt mit 1.27.0 und 1.29.0)
 - einigen Python-Skripten, im einzelnen
   - [main.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/main.py) für die eigentliche Funktionalität des ESP2090-Studios
@@ -27,7 +27,7 @@ In User-Skripten kann auf folgende Objekte und Funktionen des ESP2090-Studios zu
 - Funktion **getInputs()** - liest in_1 bis in_4 als Zahl 0-15
 - Funktion **log(text)** - schreibt ins Log
 - Funktion **beep(frequenz, dauer_ms)** - erzeugt einen Ton; ohne Dauer klingt er, bis der nächste Ton kommt (`beep(0)` = aus)
-- Funktion **setColors(liste)** - legt die Anzeigefarben der LEDs fest: eine Liste mit **64 Farbnamen**, oberste Zeile zuerst (`"schwarz"`, `"rot"`, `"orange"`, `"gelb"`, `"gruen"`, `"tuerkis"`, `"blau"`, `"violett"`, `"magenta"`, `"weiss"`). Wer seine Farben als 8x8-Matrix schreibt, übergibt `[c for zeile in matrix for c in zeile]`.
+- Funktion **setColors(liste)** - setzt die Farbmatrix der LED-Matrix (welches Pixel in welcher Farbe leuchtet, wenn es an ist; siehe [LED-Matrix](../docs/LED-Matrix.md)): eine Liste mit **64 Farbnamen**, oberste Zeile zuerst (`"schwarz"`, `"rot"`, `"orange"`, `"gelb"`, `"gruen"`, `"tuerkis"`, `"blau"`, `"violett"`, `"magenta"`, `"weiss"`). Wer seine Farben als 8x8-Matrix schreibt, übergibt `[c for zeile in matrix for c in zeile]`.
 - Funktion **setPalette(nummer, (r, g, b))** - ändert eine der 16 Farben der Palette, z. B. `setPalette(10, (5, 0, 5))`
 - Das gesamte Neopixel-Objekt **np** für komplexere Anforderungen an die LED-Matrix. Die Helligkeit ist zum Schutz der USB-Versorgung begrenzt (`LED_MAX_MA = 250` in main.py; mit eigenem Netzteil ab 2 A bis etwa 1000).
 
