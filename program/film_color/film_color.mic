@@ -1,0 +1,268 @@
+; film_color - ein "Film" mit farbigen Pixeln auf der 8x8-Matrix
+;  Fassung fuer Matrix-Protokoll v2 (main.py ab v1.4)
+;  Quelltext mit Sprungmarken und Mnemonics: film_color.src
+; 
+;  Unterprogramme nur mit Tiefe 1: der 2090 merkt sich nur EINE Ruecksprungadresse,
+;  deshalb ruft kein Unterprogramm ein anderes mit CALL auf (nur GOTO als Tail-Call).
+; 
+;  Register: R0 Warten auf REQ / Null, R1 ACK-Code, R2 x bzw. Datennibble, R3 y
+;  Bild: Nibble 0-7 in der Ablage 0-7, Nibble 8-15 in R8-RF
+;  Befehle: ACK 4 (x,y) Cursor 1/Punkt, ACK 6 (x,y) Rechteck, ACK 14 Farbe, ACK 3 ganze Matrix
+;  Zeichenart ohne +8: nur Farbebene (sichtbar mit dem naechsten Bild), wie im alten Film
+;
+F02 ; 00 start:       DISOUT  Anzeige aus
+F08 ; 01 loop:        CLEAR
+F0D ; 02              EXRL
+F08 ; 03              CLEAR   R0-RF und Ablage 0-7 geloescht (Ablage 8-F wird nicht benutzt, kein EXRM noetig)
+1F0 ; 04              Startbild: Ablage 0,2,4,6 = F
+1F2 ; 05
+1F4 ; 06
+1F6 ; 07
+F0D ; 08              EXRL
+168 ; 09              R8 = 6
+BF8 ; 0A
+BFC ; 0B
+BF8 ; 0C
+BFC ; 0D
+BF8 ; 0E
+BE9 ; 0F
+142 ; 10              x = 4
+153 ; 11              y = 5
+BE2 ; 12              Cursor 1
+172 ; 13              x = 7
+173 ; 14              y = 7
+BE4 ; 15
+BEB ; 16
+152 ; 17              x = 5
+163 ; 18              y = 6
+BE2 ; 19
+162 ; 1A              x = 6
+173 ; 1B              y = 7
+BE4 ; 1C
+11C ; 1D
+BCA ; 1E
+11A ; 1F
+13C ; 20
+11E ; 21
+BCA ; 22
+13A ; 23
+17C ; 24
+13E ; 25
+BCA ; 26
+17A ; 27
+1FC ; 28
+17E ; 29
+BCA ; 2A
+1EA ; 2B
+1FC ; 2C
+17D ; 2D
+1EE ; 2E
+BCA ; 2F
+BE9 ; 30
+152 ; 31              Punkt (5,6)
+163 ; 32
+BE2 ; 33
+1CA ; 34
+11B ; 35
+1EC ; 36
+17D ; 37
+1CE ; 38
+17F ; 39
+BCA ; 3A
+162 ; 3B              Punkt (6,6)
+163 ; 3C
+BE2 ; 3D
+152 ; 3E              Punkt (5,7)
+173 ; 3F
+BE2 ; 40
+18A ; 41
+13B ; 42
+1CC ; 43
+17D ; 44
+18E ; 45
+17F ; 46
+BCA ; 47
+162 ; 48              Punkt (6,7)
+173 ; 49
+BE2 ; 4A
+10A ; 4B
+17B ; 4C
+18C ; 4D
+1FD ; 4E
+10E ; 4F
+17F ; 50
+BCA ; 51
+149 ; 52
+BCA ; 53
+119 ; 54
+147 ; 55
+F77 ; 56
+BCA ; 57
+189 ; 58
+F0D ; 59
+117 ; 5A
+145 ; 5B
+F0D ; 5C
+BCA ; 5D
+129 ; 5E
+F0D ; 5F
+187 ; 60
+115 ; 61
+143 ; 62
+F0D ; 63
+BCA ; 64
+109 ; 65
+F0D ; 66
+127 ; 67
+185 ; 68
+113 ; 69
+141 ; 6A
+F0D ; 6B
+BCA ; 6C
+F0D ; 6D
+107 ; 6E
+125 ; 6F
+183 ; 70
+151 ; 71
+F0D ; 72
+BCA ; 73
+F0D ; 74
+105 ; 75
+123 ; 76
+1D1 ; 77
+F0D ; 78
+BCA ; 79
+F0D ; 7A
+103 ; 7B
+1F1 ; 7C
+F0D ; 7D
+BCA ; 7E
+1EB ; 7F
+10C ; 80
+1FD ; 81
+1EF ; 82
+BCA ; 83
+BEB ; 84
+152 ; 85              Punkt (5,7)
+173 ; 86
+BE2 ; 87
+1CB ; 88
+1ED ; 89
+BCA ; 8A
+162 ; 8B              Punkt (6,7)
+173 ; 8C
+BE2 ; 8D
+152 ; 8E              Punkt (5,6)
+163 ; 8F
+BE2 ; 90
+18B ; 91
+BCA ; 92
+162 ; 93              Punkt (6,6)
+163 ; 94
+BE2 ; 95
+10B ; 96
+16F ; 97
+BCA ; 98
+16D ; 99
+BCA ; 9A
+BED ; 9B              Farbe rot
+BE6 ; 9C              Farbebene wieder rot (zwei CALLs: der 2090 kann keine verschachtelten)
+BF8 ; 9D
+BFC ; 9E
+BF8 ; 9F
+BFC ; A0
+BF8 ; A1
+BEA ; A2
+142 ; A3              x = 4
+103 ; A4              y = 0
+BE2 ; A5
+172 ; A6              x = 7
+143 ; A7              y = 4
+BE4 ; A8
+101 ; A9
+F71 ; AA
+BCA ; AB
+1F1 ; AC
+F71 ; AD
+BCA ; AE
+143 ; AF
+F73 ; B0
+BCA ; B1
+145 ; B2
+F75 ; B3
+BCA ; B4
+147 ; B5
+F77 ; B6
+BCA ; B7
+BE8 ; B8
+142 ; B9              x = 4
+123 ; BA              y = 2
+BE2 ; BB
+172 ; BC              x = 7
+143 ; BD              y = 4
+BE4 ; BE
+BEC ; BF
+162 ; C0
+133 ; C1
+BE2 ; C2
+1E7 ; C3
+F77 ; C4
+149 ; C5
+BCA ; C6
+BED ; C7
+BE6 ; C8
+C01 ; C9
+FD0 ; CA bild:        DIN R0     warten auf REQ
+310 ; CB              ANDI 1,R0
+ECA ; CC              BRZ
+FE0 ; CD              DOT R0     ACK 1
+F0D ; CE              EXRL       (der eine Befehl vor den Daten)
+FE0 ; CF              Nibble 0
+FE1 ; D0
+FE2 ; D1
+FE3 ; D2
+FE4 ; D3
+FE5 ; D4
+FE6 ; D5
+FE7 ; D6
+FE8 ; D7
+FE9 ; D8
+FEA ; D9
+FEB ; DA
+FEC ; DB
+FED ; DC
+FEE ; DD
+FEF ; DE              Nibble 15
+F0D ; DF              EXRL
+FE2 ; E0              Ausgaenge auf 0 (R2 ist beim Aufruf immer 0, siehe cmd)
+F07 ; E1              RET
+141 ; E2 punkt:       R1 = 4: Cursor 1 / Punkt
+CEF ; E3
+161 ; E4 rechteck:    R1 = 6: Rechteck Cursor 1 - Cursor 2
+CEF ; E5
+131 ; E6 ganz:        R1 = 3: ganze Matrix, R2 = 0 (nach cmd immer): nur Farbebene
+CEF ; E7
+532 ; E8 f_magenta:   R2 += 3   (R2 ist hier immer 0)
+512 ; E9 f_tuerkis:   R2 += 1
+512 ; EA f_gruen:
+512 ; EB f_gelb:
+512 ; EC f_orange:
+512 ; ED f_rot:       R2 += 1   -> magenta 8, tuerkis 5, gruen 4, gelb 3, orange 2, rot 1
+1E1 ; EE farbe:       R1 = 14: aktive Farbe
+FD0 ; EF cmd:         DIN R0     warten auf REQ
+310 ; F0              ANDI 1,R0
+EEF ; F1              BRZ
+FE1 ; F2              DOT R1     ACK
+FE2 ; F3              DOT R2     Nibble 1 (x bzw. Wert)
+FE3 ; F4              DOT R3     Nibble 2 (y; bei Befehlen mit 1 Nibble ohne Bedeutung)
+102 ; F5              R2 = 0
+FE2 ; F6              Ausgaenge auf 0
+F07 ; F7              RET
+10B ; F8 blink_a:
+16D ; F9
+16F ; FA
+CCA ; FB
+16B ; FC blink_b:
+1FD ; FD
+1FF ; FE
+CCA ; FF

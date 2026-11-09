@@ -1,0 +1,291 @@
+;; demo_matrix - zeigt die Zeichenbefehle der LED-Matrix (Protokoll v2, Firmware ab v1.4)
+;; Quelltext mit Sprungmarken und Mnemonics: demo_matrix.src
+;;
+;; Bedienung: Programm starten, "LED Start" in der Weboberflaeche, dann jede Taste
+;; am 2090 zeigt die naechste Vorfuehrung. Beim Warten auf die Taste zeigt die Anzeige
+;; deren Nummer (1-E); waehrend der Vorfuehrung ist sie aus (DISOUT, noetig fuers Timing).
+;;  1 ganze Matrix rot          2 Punkt                   3 Rechteck
+;;  4 Rahmen                    5 Ausschnitt ausblenden   6 wieder einblenden
+;;  7 Linienzug                 8 Schieben mit Umlauf     9 Anzeige an/aus
+;;  A Glitter                   B bunte Vielecke          C Rahmen ineinander, Farben laufen
+;;  D Regenbogen schieben       E Feuerwerk
+;; Danach beginnt es von vorn.
+;;
+;; Unterprogramme nur mit Tiefe 1 (der 2090 merkt sich nur EINE Ruecksprungadresse):
+;; kein CALL in einem Unterprogramm, weiter nur mit GOTO.
+;;
+;; Cursor 1 wird vor Figuren stumm gesetzt (Art 0), die Figur erscheint erst mit Cursor 2.
+;;
+;; Register: r0 REQ/Null, r1 ACK, r2 x bzw. Wert, r3 y, r4 Taste, r5 Nummer,
+;;           r6-r8 und rC Zaehler, r9/rA Startpunkt, rB Ecken, rD-rF Zufall (RND)
+
+#define REQ   r0
+#define FUNC  r1
+#define X     r2
+#define Y     r3
+#define TASTE r4
+#define NR    r5
+#define I     r6
+#define J     r7
+#define K     r8
+#define PX    r9
+#define PY    rA
+#define ECKE  rB
+#define RUNDE rC
+#define ZX    rD
+#define ZY    rE
+#define ZF    rF
+
+start:      CLEAR
+
+; ---------- 1: ganze Matrix rot ----------
+            CALL taste
+            MOVI #1,X           ; Farbe 1 = rot
+            CALL farbe
+            MOVI #1,X           ; Art 1: Farbe + Bits
+            CALL ganz
+
+; ---------- 2: Punkt ----------
+            CALL taste
+            CALL loeschen
+            MOVI #3,X           ; gelb
+            CALL farbe
+            MOVI #B,X           ; x = 3 +8 (sichtbar)
+            MOVI #4,Y           ; y = 4
+            CALL punkt
+
+; ---------- 3: Rechteck ----------
+            CALL taste
+            MOVI #4,X           ; gruen
+            CALL farbe
+            MOVI #1,X           ; Cursor 1 = (1,1), stumm (Art 0: nur Farbebene)
+            MOVI #1,Y
+            CALL punkt
+            MOVI #E,X           ; Cursor 2 = (6,5)
+            MOVI #5,Y
+            CALL rechteck
+
+; ---------- 4: Rahmen ----------
+            CALL taste
+            MOVI #6,X           ; blau
+            CALL farbe
+            MOVI #0,X           ; Cursor 1 = (0,0), stumm
+            MOVI #0,Y
+            CALL punkt
+            MOVI #F,X           ; (7,7)
+            MOVI #7,Y
+            CALL rahmen
+
+; ---------- 5: Ausschnitt ausblenden (nur Bits aus) ----------
+            CALL taste
+            MOVI #A,X           ; (2,2), x+8 und y+8 = Art 3
+            MOVI #A,Y
+            CALL punkt
+            MOVI #D,X           ; (5,5)
+            MOVI #D,Y
+            CALL rechteck
+
+; ---------- 6: wieder einblenden (nur Bits an, Farben sind noch da) ----------
+            CALL taste
+            MOVI #2,X           ; (2,2), nur y+8 = Art 2
+            MOVI #A,Y
+            CALL punkt
+            MOVI #5,X           ; (5,5)
+            MOVI #D,Y
+            CALL rechteck
+
+; ---------- 7: Linienzug ----------
+            CALL taste
+            CALL loeschen
+            MOVI #8,X           ; magenta
+            CALL farbe
+            MOVI #0,X           ; Start (0,7), stumm
+            MOVI #7,Y
+            CALL punkt
+            MOVI #F,X           ; -> (7,7)
+            CALL linie
+            MOVI #8,X           ; -> (0,0), schraeg
+            MOVI #0,Y
+            CALL linie
+            MOVI #F,X           ; -> (7,0)
+            CALL linie
+
+; ---------- 8: Schieben mit Umlauf ----------
+            CALL taste
+            MOVI #9,X           ; rechts + Umlauf
+            MOVI #7,I           ; 8 Mal
+s_rechts:   CALL schieben
+            ADDI #F,I           ; I-1, Carry solange I >= 1 war
+            BRC s_rechts
+            MOVI #A,X           ; hoch + Umlauf
+            MOVI #7,I
+s_hoch:     CALL schieben
+            ADDI #F,I
+            BRC s_hoch
+
+; ---------- 9: Anzeige an/aus ----------
+            CALL taste
+            MOVI #1,X           ; umschalten
+            MOVI #5,I           ; 6 Mal, am Ende wieder an
+blinken:    CALL anzeige
+            ADDI #F,I
+            BRC blinken
+
+; ---------- A: Glitter ----------
+            CALL taste
+            CALL loeschen
+            MOVI #3,J           ; 4 x 16 = 64 Funken
+gl_aussen:  MOVI #F,I
+gl_innen:   CALL zfarbe         ; zufaellige Farbe 0-7 (0 = schwarz loescht den Funken)
+            CALL zpos           ; zufaelliger Punkt, sichtbar
+            CALL punkt
+            ADDI #F,I
+            BRC gl_innen
+            ADDI #F,J
+            BRC gl_aussen
+
+; ---------- B: bunte Vielecke ----------
+            CALL taste
+            CALL loeschen
+            MOVI #9,J           ; 10 Vierecke
+vieleck:    CALL zbunt
+            CALL zpos           ; erste Ecke (x+8)
+            MOV X,PX            ; merken, mit +8 fuer die letzte Linie
+            MOV Y,PY
+            ANDI #7,X           ; Cursor 1 stumm
+            CALL punkt
+            MOVI #2,ECKE        ; 3 weitere Ecken
+ecke:       CALL zpos
+            CALL linie
+            ADDI #F,ECKE
+            BRC ecke
+            MOV PX,X            ; zurueck zur ersten Ecke
+            MOV PY,Y
+            CALL linie
+            ADDI #F,J
+            BRC vieleck
+
+; ---------- C: Rahmen ineinander, Farben laufen ----------
+            CALL taste
+            MOVI #1,RUNDE       ; 2 Runden
+r_runde:    MOVI #5,K           ; je 6 Bilder, Farben 6...9 bis 1...4
+r_bild:     MOVI #0,I           ; Ring 0 ... 3
+            MOV K,J
+r_ring:     ADDI #1,J           ; Farbe = K + Ring + 1
+            MOV J,X
+            CALL farbe
+            MOV I,X             ; Cursor 1 = (i,i), stumm
+            MOV I,Y
+            CALL punkt
+            MOVI #F,X           ; Cursor 2 = (7-i,7-i), x+8
+            SUB I,X
+            MOVI #7,Y
+            SUB I,Y
+            CALL rahmen
+            ADDI #1,I
+            CMPI #4,I
+            BRZ r_weiter
+            GOTO r_ring
+r_weiter:   ADDI #F,K
+            BRC r_bild
+            ADDI #F,RUNDE
+            BRC r_runde
+
+; ---------- D: Regenbogen schieben ----------
+            CALL taste
+            MOVI #0,I           ; Spalte 0 ... 7
+rb_spalte:  MOV I,X             ; Farbe = Spalte + 1
+            ADDI #1,X
+            CALL farbe
+            MOV I,X             ; Cursor 1 = (i,0), stumm
+            MOVI #0,Y
+            CALL punkt
+            ADDI #8,X           ; Linie bis (i,7), sichtbar
+            MOVI #7,Y
+            CALL linie
+            ADDI #1,I
+            CMPI #8,I
+            BRZ rb_laufen
+            GOTO rb_spalte
+rb_laufen:  MOVI #8,X           ; links + Umlauf
+            MOVI #F,I           ; 16 Mal
+rb_schritt: CALL schieben
+            ADDI #F,I
+            BRC rb_schritt
+
+; ---------- E: Feuerwerk ----------
+            CALL taste
+            CALL loeschen
+            MOVI #F,I           ; 16 Strahlen
+strahl:     CALL zbunt
+            MOVI #3,X           ; Mitte (3,3), stumm
+            MOVI #3,Y
+            CALL punkt
+            CALL zpos
+            CALL linie
+            ADDI #F,I
+            BRC strahl
+
+            GOTO start
+
+; ================= Unterprogramme =================
+
+; Taste abwarten, Nummer der Vorfuehrung anzeigen
+taste:      ADDI #1,NR
+            DISP #1,NR
+            KIN TASTE
+            RET
+
+; Matrix loeschen: Art 3 = alle Bits aus (Farben bleiben, sind aber unsichtbar)
+; Kein CALL hier: der 2090 kann keine verschachtelten Unterprogramme.
+loeschen:   MOVI #3,X
+            GOTO ganz
+
+; Zufall: Farbe 1-8 setzen (kraeftige Farben)
+zbunt:      RND
+            MOV ZF,X
+            ANDI #7,X
+            ADDI #1,X
+            GOTO farbe
+
+; Zufall: Farbe 0-7 setzen (0 = schwarz)
+zfarbe:     RND
+            MOV ZF,X
+            ANDI #7,X
+            GOTO farbe
+
+; Zufall: Punkt (x,y) mit x+8 (sichtbar) nach X, Y
+zpos:       RND
+            MOV ZX,X
+            ANDI #7,X
+            ADDI #8,X
+            MOV ZY,Y
+            ANDI #7,Y
+            RET
+
+; Befehle an den ESP: R1 = ACK, Daten in X (und Y)
+farbe:      MOVI #E,FUNC        ; ACK 14 aktive Farbe (1 Nibble)
+            GOTO cmd
+ganz:       MOVI #3,FUNC        ; ACK 3 ganze Matrix (1 Nibble)
+            GOTO cmd
+punkt:      MOVI #4,FUNC        ; ACK 4 Cursor 1 / Punkt
+            GOTO cmd
+rechteck:   MOVI #6,FUNC        ; ACK 6 Rechteck gefuellt
+            GOTO cmd
+rahmen:     MOVI #7,FUNC        ; ACK 7 Rahmen
+            GOTO cmd
+linie:      MOVI #8,FUNC        ; ACK 8 Linie, Cursor 1 folgt
+            GOTO cmd
+schieben:   MOVI #B,FUNC        ; ACK 11 schieben (1 Nibble)
+            GOTO cmd
+anzeige:    MOVI #F,FUNC        ; ACK 15 Anzeige (1 Nibble)
+cmd:        DISOUT              ; Anzeige aus: sonst stimmt die Befehlsdauer nicht
+warte:      DIN REQ             ; warten auf REQ
+            ANDI #1,REQ
+            BRZ warte
+            DOT FUNC            ; ACK
+            DOT X               ; Nibble 1
+            DOT Y               ; Nibble 2 (bei 1 Nibble ohne Bedeutung)
+            MOVI #0,REQ
+            DOT REQ             ; Ausgaenge auf 0
+            RET

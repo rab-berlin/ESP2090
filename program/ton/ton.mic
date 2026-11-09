@@ -1,0 +1,22 @@
+; ton - der 2090 als kleines Klavier, den Ton erzeugt der ESP2090
+;  Gehoert zum Userscript ton.py (muss auf dem ESP laufen).
+; 
+;  Bedienung: Programm starten, Userscript starten. Die Tasten 1-F spielen
+;  eine Tonleiter ueber zwei Oktaven (1 = c', F = c'''), Taste 0 ist stumm.
+; 
+;  Protokoll (nur in eine Richtung): Der 2090 legt die Tastennummer kurz auf
+;  die Ausgaenge und dann wieder 0. Der ESP spielt bei jedem neuen Wert
+;  ungleich 0 einen Ton.
+; 
+;  Register: r0 Taste, r1 Null
+;
+101 ; 00 start:         MOVI #0,NULL
+FF0 ; 01 taste:         KIN TASTE           auf Tastendruck warten
+F10 ; 02                DISP #1,TASTE       Taste anzeigen
+FE0 ; 03                DOT TASTE           Tastennummer auf die Ausgaenge
+F01 ; 04                NOP                 kurz stehen lassen,
+F01 ; 05                NOP                 damit der ESP sie sicher sieht
+F01 ; 06                NOP
+F01 ; 07                NOP
+FE1 ; 08                DOT NULL            Ausgaenge wieder auf 0
+C01 ; 09                GOTO taste

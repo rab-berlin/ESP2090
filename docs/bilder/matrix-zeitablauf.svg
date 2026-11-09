@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520">
+<defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,2 L10,5 L0,8 z" fill="#222"/></marker></defs>
+<rect width="1000" height="520" fill="white"/>
+<text x="20.0" y="30.0" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="start" fill="#222" font-weight="bold">Blockmodus: ganzes Bild (ACK 1, 16 Nibbles)</text>
+<text x="20.0" y="69.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">REQ (Eing. 1)</text>
+<text x="20.0" y="129.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">Ausg. 1-4</text>
+<text x="20.0" y="184.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">ESP liest</text>
+<polyline points="116.4,77 150.0,77 150.0,53 231.06,53 231.06,77 970.2600000000001,77" fill="none" stroke="#1f6fb2" stroke-width="2.5"/>
+<rect x="116.4" y="113" width="111.72" height="24" fill="#f4f4f4" stroke="#bbb"/>
+<text x="172.3" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#777" font-weight="normal">0</text>
+<rect x="228.1" y="113" width="39.1" height="24" fill="#fde2df" stroke="#c0392b" stroke-width="1.2"/>
+<text x="247.7" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">ACK 1</text>
+<rect x="267.2" y="113" width="39.1" height="24" fill="#f4f4f4" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="306.2" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="325.8" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">N0</text>
+<rect x="345.3" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="364.8" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">N1</text>
+<rect x="384.4" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="403.9" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">N2</text>
+<rect x="423.4" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="443.0" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">N3</text>
+<rect x="462.5" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="482.0" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">…</text>
+<rect x="501.5" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="540.6" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="579.7" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="618.7" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="657.8" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="696.8" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="735.9" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="775.0" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="814.0" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<rect x="853.1" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="872.6" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">N14</text>
+<rect x="892.1" y="113" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="911.7" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">N15</text>
+<rect x="931.2" y="113" width="39.1" height="24" fill="#f4f4f4" stroke="#c0392b" stroke-width="1.2"/>
+<text x="950.7" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">0</text>
+<text x="269.2" y="107.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#555" font-weight="normal">1 Befehl (z. B. EXRL)</text>
+<line x1="231.1" y1="139" x2="231.1" y2="172" stroke="#c0392b" stroke-dasharray="3,3"/>
+<polygon points="226.1,172 236.1,172 231.1,180" fill="#c0392b"/>
+<line x1="326.4" y1="139" x2="326.4" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="321.4,172 331.4,172 326.4,180" fill="#2e8b57"/>
+<line x1="365.1" y1="139" x2="365.1" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="360.1,172 370.1,172 365.1,180" fill="#2e8b57"/>
+<line x1="403.8" y1="139" x2="403.8" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="398.8,172 408.8,172 403.8,180" fill="#2e8b57"/>
+<line x1="442.5" y1="139" x2="442.5" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="437.5,172 447.5,172 442.5,180" fill="#2e8b57"/>
+<line x1="481.2" y1="139" x2="481.2" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="476.2,172 486.2,172 481.2,180" fill="#2e8b57"/>
+<line x1="520.0" y1="139" x2="520.0" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="515.0,172 525.0,172 520.0,180" fill="#2e8b57"/>
+<line x1="558.7" y1="139" x2="558.7" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="553.7,172 563.7,172 558.7,180" fill="#2e8b57"/>
+<line x1="597.4" y1="139" x2="597.4" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="592.4,172 602.4,172 597.4,180" fill="#2e8b57"/>
+<line x1="636.1" y1="139" x2="636.1" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="631.1,172 641.1,172 636.1,180" fill="#2e8b57"/>
+<line x1="674.8" y1="139" x2="674.8" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="669.8,172 679.8,172 674.8,180" fill="#2e8b57"/>
+<line x1="713.5" y1="139" x2="713.5" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="708.5,172 718.5,172 713.5,180" fill="#2e8b57"/>
+<line x1="752.2" y1="139" x2="752.2" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="747.2,172 757.2,172 752.2,180" fill="#2e8b57"/>
+<line x1="790.9" y1="139" x2="790.9" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="785.9,172 795.9,172 790.9,180" fill="#2e8b57"/>
+<line x1="829.6" y1="139" x2="829.6" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="824.6,172 834.6,172 829.6,180" fill="#2e8b57"/>
+<line x1="868.4" y1="139" x2="868.4" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="863.4,172 873.4,172 868.4,180" fill="#2e8b57"/>
+<line x1="907.1" y1="139" x2="907.1" y2="172" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="902.1,172 912.1,172 907.1,180" fill="#2e8b57"/>
+<line x1="228.12" y1="198" x2="326.4" y2="198" stroke="#222" marker-start="url(#a)" marker-end="url(#a)"/>
+<text x="277.3" y="213.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">23,4 ms</text>
+<line x1="326.4" y1="198" x2="365.1114" y2="198" stroke="#222" marker-start="url(#a)" marker-end="url(#a)"/>
+<text x="345.8" y="213.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">9,2 ms</text>
+<line x1="228.12" y1="95" x2="267.18" y2="95" stroke="#222" marker-start="url(#a)" marker-end="url(#a)"/>
+<text x="247.7" y="89.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222" font-weight="normal">1 Befehl ≈ 9,3 ms</text>
+<text x="20.0" y="290.0" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="start" fill="#222" font-weight="bold">Zeichenmodus: Befehl mit 2 Nibbles (z. B. ACK 4 = Punkt bei x, y)</text>
+<text x="20.0" y="329.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">REQ (Eing. 1)</text>
+<text x="20.0" y="389.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">Ausg. 1-4</text>
+<text x="20.0" y="444.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">ESP liest</text>
+<polyline points="116.4,337 150.0,337 150.0,313 231.06,313 231.06,337 970.2600000000001,337" fill="none" stroke="#1f6fb2" stroke-width="2.5"/>
+<rect x="116.4" y="373" width="111.72" height="24" fill="#f4f4f4" stroke="#bbb"/>
+<text x="172.3" y="390.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#777" font-weight="normal">0</text>
+<rect x="228.1" y="373" width="39.1" height="24" fill="#fde2df" stroke="#c0392b" stroke-width="1.2"/>
+<text x="247.7" y="390.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">ACK 4</text>
+<rect x="267.2" y="373" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="286.7" y="390.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">x</text>
+<rect x="306.2" y="373" width="39.1" height="24" fill="#fff3d6" stroke="#c0392b" stroke-width="1.2"/>
+<text x="325.8" y="390.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">y</text>
+<rect x="345.3" y="373" width="39.1" height="24" fill="#f4f4f4" stroke="#c0392b" stroke-width="1.2"/>
+<text x="364.8" y="390.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">0</text>
+<line x1="231.1" y1="399" x2="231.1" y2="432" stroke="#c0392b" stroke-dasharray="3,3"/>
+<polygon points="226.1,432 236.1,432 231.1,440" fill="#c0392b"/>
+<line x1="287.8" y1="399" x2="287.8" y2="432" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="282.8,432 292.8,432 287.8,440" fill="#2e8b57"/>
+<line x1="326.5" y1="399" x2="326.5" y2="432" stroke="#2e8b57" stroke-dasharray="3,3"/>
+<polygon points="321.5,432 331.5,432 326.5,440" fill="#2e8b57"/>
+<line x1="228.12" y1="458" x2="287.76" y2="458" stroke="#222" marker-start="url(#a)" marker-end="url(#a)"/>
+<text x="257.9" y="473.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">14,2 ms</text>
+<line x1="287.76" y1="458" x2="326.4714" y2="458" stroke="#222" marker-start="url(#a)" marker-end="url(#a)"/>
+<text x="307.1" y="473.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#222" font-weight="normal">9,2 ms</text>
+<line x1="228.12" y1="355" x2="267.18" y2="355" stroke="#222" marker-start="url(#a)" marker-end="url(#a)"/>
+<text x="247.7" y="349.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#222" font-weight="normal">1 Befehl ≈ 9,3 ms</text>
+<line x1="150" y1="498" x2="180" y2="498" stroke="#1f6fb2" stroke-width="2.5"/>
+<text x="186.0" y="502.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#222" font-weight="normal">ESP → 2090</text>
+<rect x="290" y="490" width="24" height="16" fill="#fde2df" stroke="#c0392b"/>
+<text x="320.0" y="502.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#222" font-weight="normal">2090 → ESP (DOT)</text>
+<polygon points="455,492 465,492 460,500" fill="#2e8b57"/>
+<text x="472.0" y="502.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#222" font-weight="normal">ESP liest die Ausgänge (rot: ACK-Kontrolle nach 0,7 ms)</text>
+</svg>

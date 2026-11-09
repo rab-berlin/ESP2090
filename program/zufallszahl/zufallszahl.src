@@ -1,0 +1,36 @@
+;; zufallszahl - holt auf Tastendruck eine echte Zufallszahl 0-F vom ESP2090
+;; Gehoert zum Userscript zufallszahl.py (muss auf dem ESP laufen).
+;;
+;; Bedienung: Programm starten, Userscript starten. Jede Taste am 2090
+;; holt eine neue Zufallszahl und zeigt sie an.
+;;
+;; Protokoll (Anfrage und Antwort):
+;;   1. 2090: Ausgang 1 an (Anfrage)
+;;   2. ESP:  legt die Zahl auf die Eingaenge 1-4
+;;   3. 2090: wartet kurz, liest die Zahl mit DIN
+;;   4. 2090: Ausgaenge auf 0 (fertig), ESP setzt die Eingaenge auf 0
+;;
+;; Register: r0 Zahl, r1 Ausgang, r2 Taste, r3 Zaehler fuer die Wartezeit
+
+#define ZAHL   r0
+#define AUS    r1
+#define TASTE  r2
+#define I      r3
+
+start:
+MOVI #0,ZAHL
+anzeige:
+DISP #1,ZAHL        ; Zahl anzeigen (eine Stelle)
+KIN TASTE           ; auf Tastendruck warten
+MOVI #1,AUS
+DOT AUS             ; Anfrage: Ausgang 1 an
+MOVI #4,I           ; dem ESP etwas Zeit lassen (er schaut alle 5 ms nach)
+warte:
+SUBI #1,I
+BRZ lesen
+GOTO warte
+lesen:
+DIN ZAHL            ; Antwort lesen
+MOVI #0,AUS
+DOT AUS             ; fertig: Ausgaenge auf 0
+GOTO anzeige

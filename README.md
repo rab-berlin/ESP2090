@@ -100,11 +100,11 @@ Der Spaß liegt wie immer darin, mit diesen Einschränkungen eben doch etwas zu 
 
 Wenn du bisher noch nie etwas mit Protokollen zu tun haben wolltest (hast du aber, weil du gerade im Internet unterwegs bist) - jetzt solltest du damit anfangen, wenn du dem Microtronic die _Welt der Dinge_ zugänglich machen willst.
 
-Als einfaches Beispiel für ein Protokoll dient der "Bildschirm". Um alle 8x8 Pixel der LED-Matrix anzusteuern, werden die Speicherregister 0-F des Microtronic nacheinander auf die Ausgänge gelegt - also 16 Nibbles, insgesamt 64 Bit. Damit dies zu genau festgelegten Zeiten passiert, sendet das ESP2090-Studio zuerst einen Request (REQ, auf Eingang 1), wartet auf eine Bestätigung (ACK, die Befehlsnummer auf den Ausgängen) und liest dann alle 9,2 Millisekunden die Ausgänge - denn bei deaktivierter Anzeige (DISOUT) benötigt der 2090 ziemlich genau 9,3 ms für die Ausführung einer Instruktion. Ein ACK wird erst erkannt, nachdem die Ausgänge vorher auf 0 standen; am Ende einer Übertragung setzt der 2090 die Ausgänge deshalb wieder auf 0.
+Ein Protokoll ist nichts weiter als eine Verabredung: Wer legt wann welches Nibble auf die Leitungen, und woran erkennt der andere, dass er es lesen darf? Der Microtronic hat vier Ausgänge und vier Eingänge, mehr nicht – aber das reicht für erstaunlich viel. Das ESP2090-Studio bietet dafür zwei Wege:
 
-Seit Firmware v1.4 (Protokoll v2) kennt die Matrix neben dem ganzen Bild (ACK 1, 16 Nibbles) auch Zeichenbefehle mit ein oder zwei Nibbles: Punkt, gefülltes Rechteck, Rahmen und Linie (x und y in einem Befehl), ganze Matrix füllen, einzelnes Nibble setzen, Schieben in alle vier Richtungen, aktive Farbe aus 16 Farben und Anzeige an/aus. Programme für die alte Firmware, die Farbbefehle benutzen, müssen dafür angepasst werden; Programme, die nur ganze Bilder schicken (wie die BerlinUhr), laufen unverändert.
+- **Userscripts in Python.** Ein kleines Programm auf dem ESP wartet auf Daten an den Ausgängen des Microtronic und/oder legt etwas auf seine Eingänge – nach einem Protokoll, das du selbst festlegst (Nibblefolgen, Anfrage und Antwort, Timing). Beispiele: ein Klavier mit dem Buzzer, ein Zähler mit den Tasten der Weboberfläche und echte Zufallszahlen für den 2090. → [Userscripts](docs/Userscripts.md)
 
-Auf diese Weise können auch andere Protokolle zum Datenaustausch zwischen Microtronic und ESP32 realisiert werden. 
+- **Die LED-Matrix als Bildschirm.** Ein Sonderfall, fest in die Firmware eingebaut: Der Microtronic schickt entweder ganze Bilder (16 Nibbles, „Blockmodus“) oder kurze Zeichenbefehle für Punkt, Rechteck, Rahmen, Linie, Farbe und Schieben („Zeichenmodus“). Weil das Timing hier auf die Millisekunde stimmen muss, ist das Protokoll genau beschrieben – mit Bildern und Beispielprogrammen. → [LED-Matrix](docs/LED-Matrix.md)
 
 ## Beispiele
 
