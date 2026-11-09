@@ -1,6 +1,6 @@
 # Die LED-Matrix als Bildschirm für den Microtronic
 
-Die 8x8-LED-Matrix ist ein Sonderfall der Kommunikation über die Ein- und Ausgänge: Der Microtronic schickt Daten über seine vier Ausgänge, das ESP2090-Studio liest sie und zeichnet. Im Unterschied zu den [Userscripts](Userscripts.md) ist das Protokoll fest in die Firmware eingebaut. Auf dem 2090 läuft dafür ein Programm mit einer kleinen Senderoutine, auf dem ESP muss nur die Matrix eingeschaltet sein (**„LED on“** in der Weboberfläche). Was die Matrix zeigt, erscheint auch live in der Weboberfläche.
+Die 8x8-LED-Matrix ist ein Sonderfall der Kommunikation über die Ein- und Ausgänge: Der Microtronic schickt Daten über seine vier Ausgänge, das ESP2090-Studio liest sie und zeichnet. Im Unterschied zu den [Userscripts](Userscripts.md) ist das Protokoll fest in die Firmware eingebaut. Auf dem 2090 läuft dafür eine besondere Senderoutine, auf dem ESP muss nur die Matrix eingeschaltet sein (**„LED on“** in der Weboberfläche). Was die Matrix zeigt, erscheint auch live in der Weboberfläche.
 
 Es gibt zwei Arten, die Matrix zu benutzen, und beide lassen sich in einem Programm mischen:
 
@@ -86,7 +86,7 @@ Im Zeichenmodus besteht ein Befehl aus dem ACK und ein oder zwei Nibbles:
 | 14 | f | aktive Farbe 0–15 wählen (siehe Palette) |
 | 15 | w | Anzeige: 1 umschalten, 2 an, 3 aus (gezeichnet wird weiter) |
 
-ACK 2, 5, 9, 12 und 13 haben keine Bedeutung und werden ignoriert.
+ACK 2, 5, 9, 12 und 13 haben bisher keine Bedeutung und werden ignoriert. Hier kommen später weitere Zeichenbefehle dazu.
 
 **Koordinaten:** x ist die Spalte (0 links bis 7 rechts), y die Zeile (0 unten bis 7 oben).
 
@@ -96,12 +96,12 @@ ACK 2, 5, 9, 12 und 13 haben keine Bedeutung und werden ignoriert.
 
 | x +8 | y +8 | Zeichenart | Farbmatrix | Bitmatrix | wozu |
 |---|---|---|---|---|---|
-| – | – | 0 | aktive Farbe | bleibt | Farben vorbereiten, bevor die Pixel kommen |
+| – | – | 0 | aktive Farbe | bleibt | Cursor 1 setzen, ohne etwas zu zeigen; Farben vorbereiten, bevor die Pixel kommen |
 | ✓ | – | 1 | aktive Farbe | an (bei Farbe 0 = schwarz: aus) | normales Zeichnen |
 | – | ✓ | 2 | bleibt | an | einen Ausschnitt zeigen |
 | ✓ | ✓ | 3 | bleibt | aus | einen Ausschnitt ausblenden |
 
-Im Bild: `ACK 4` mit x = 1+8, y = 1 setzt Cursor 1, dann zeichnet `ACK 6` mit x = 4+8, y = 3 das gefüllte Rechteck in der aktiven Farbe. Die blaue Linie entsteht aus `ACK 4` (6+8, 0) und `ACK 8` (7+8, 4). Cursor 1 zeichnet seinen Punkt in derselben Zeichenart – für eine Figur also beide Cursor mit denselben +8-Bits senden. Soll Cursor 1 nur gesetzt werden, ohne dass etwas erscheint, schickt man ihn ohne +8 (Zeichenart 0).
+Im Bild: `ACK 4` mit x = 1, y = 1 setzt Cursor 1, dann zeichnet `ACK 6` mit x = 4+8, y = 3 das gefüllte Rechteck in der aktiven Farbe. Die blaue Linie entsteht aus `ACK 4` (6, 0) und `ACK 8` (7+8, 4). Cursor 1 wird für eine Figur ohne +8 gesetzt (Zeichenart 0): So leuchtet vorher kein einzelnes Pixel auf, und die Figur bringt den Eckpunkt mit. Nur für einen einzelnen Punkt bekommt `ACK 4` selbst das +8.
 
 Bei ACK 3 ist das Nibble direkt die Zeichenart: `ACK 3, 1` füllt die ganze Matrix in der aktiven Farbe, `ACK 3, 3` schaltet alle Pixel aus, ohne die Farben zu vergessen.
 
