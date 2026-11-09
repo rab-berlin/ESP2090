@@ -22,6 +22,8 @@
 #                   +0 push, +4 pop, +8 peek (zurueckholen, bleibt auf dem Stapel),
 #                   +12 Stapel leeren. Je Matrix ein Stapel mit STACK_MAX Plaetzen,
 #                   bei vollem Stapel faellt beim Push die aelteste Sicherung heraus.
+#                   Keine Aktion baut die Anzeige neu auf: sichtbar mit dem naechsten
+#                   Neuaufbau, sofort mit ACK 15 / 2.
 #   14 f            aktive Farbe
 #   15 w            Anzeige: 1 umschalten, 2 an, 3 aus
 # Zeichenart aus den beiden +8-Bits (x +8 -> Bit 0, y +8 -> Bit 1):
@@ -209,9 +211,9 @@ class Matrix:
         return False
 
     def _stack(self, w):
-        """ACK 13: push (+0), pop (+4), peek (+8), leeren (+12) fuer Farbmatrix (1) und/oder Bitmatrix (2)."""
+        """ACK 13: push (+0), pop (+4), peek (+8), leeren (+12) fuer Farbmatrix (1) und/oder Bitmatrix (2).
+        Baut die Anzeige nicht neu auf (Rueckgabe immer False)."""
         aktion = w >> 2
-        neu = False
         for bit in (1, 2):
             if not w & bit:
                 continue
@@ -228,8 +230,7 @@ class Matrix:
                     self.colors = bytearray(oben)
                 else:
                     self.bits = bytearray(oben)
-                neu = True
-        return neu
+        return False
 
     # ---------- Anzeige ----------
     def render(self, np):

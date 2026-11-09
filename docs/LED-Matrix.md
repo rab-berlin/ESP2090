@@ -132,7 +132,7 @@ Ein Userscript kann jede dieser Farben mit `setPalette(nummer, (r, g, b))` ände
 | 9 / 10 / 11 | **peek**: oberste Sicherung zurückholen, sie bleibt auf dem Stapel |
 | 13 / 14 / 15 | Stapel leeren |
 
-Bit 0 steht für die Farbmatrix, Bit 1 für die Bitmatrix, die oberen beiden Bits für die Aktion (+0 push, +4 pop, +8 peek, +12 leeren). Ist ein Stapel voll, fällt beim nächsten push die älteste Sicherung heraus; pop und peek auf einen leeren Stapel ändern nichts. [Film2090](https://github.com/rab-berlin/Film2090) legt am Start die Farben, die vorher ein Userscript gesetzt hat, auf den Stapel und holt sie nach jeder Szene mit peek zurück.
+Bit 0 steht für die Farbmatrix, Bit 1 für die Bitmatrix, die oberen beiden Bits für die Aktion (+0 push, +4 pop, +8 peek, +12 leeren). Ist ein Stapel voll, fällt beim nächsten push die älteste Sicherung heraus; pop und peek auf einen leeren Stapel ändern nichts. Pop und peek ändern nur die Matrix, die Anzeige bleibt zunächst, wie sie ist. Sichtbar wird das Ergebnis mit dem nächsten Neuaufbau, etwa dem nächsten Bild; sofort mit `ACK 15, 2` (Anzeige an). [Film2090](https://github.com/rab-berlin/Film2090) legt am Start die Farben, die vorher ein Userscript gesetzt hat, auf den Stapel und holt sie nach jeder Szene mit peek zurück.
 
 **Zeitablauf:** Das erste Nibble kommt **direkt im nächsten Schritt** nach dem ACK. Der ESP liest es 14,2 ms nach dem ACK, das zweite 9,2 ms später.
 
