@@ -1,11 +1,12 @@
-; demo_matrix - zeigt die Zeichenbefehle der LED-Matrix
+; demo_matrix - zeigt die Zeichenbefehle der LED-Matrix (Protokoll v2, Firmware ab v1.4)
+;  Quelle: beispiele/demo_matrix.src, erzeugt mit: python tools/micasm.py beispiele/demo_matrix.src beispiele/demo_matrix.mic
 ; 
 ;  Bedienung: Programm starten, "LED Start" in der Weboberflaeche, dann jede Taste
 ;  am 2090 zeigt die naechste Vorfuehrung. Beim Warten auf die Taste zeigt die Anzeige
 ;  deren Nummer (1-E); waehrend der Vorfuehrung ist sie aus (DISOUT, noetig fuers Timing).
 ;   1 ganze Matrix rot          2 Punkt                   3 Rechteck
 ;   4 Rahmen                    5 Ausschnitt ausblenden   6 wieder einblenden
-;   7 Linienzug                 8 Schieben mit Umlauf     9 Anzeige an/aus
+;   7 Linienzug                 8 Schieben mit Umlauf     9 Schlafen (ACK 15)
 ;   A Glitter                   B bunte Vielecke          C Rahmen ineinander, Farben laufen
 ;   D Regenbogen schieben       E Feuerwerk
 ;  Danach beginnt es von vorn.
@@ -19,211 +20,210 @@
 ;            r6-r8 und rC Zaehler, r9/rA Startpunkt, rB Ecken, rD-rF Zufall (RND)
 ;
 F08 ; 00 start:         CLEAR
-BA2 ; 01                CALL taste
+BA1 ; 01                CALL taste
 112 ; 02                MOVI #1,X           Farbe 1 = rot
-BB8 ; 03                CALL farbe
+BB7 ; 03                CALL farbe
 112 ; 04                MOVI #1,X           Art 1: Farbe + Bits
-BBA ; 05                CALL ganz
-BA2 ; 06                CALL taste
-BA6 ; 07                CALL loeschen
+BB9 ; 05                CALL ganz
+BA1 ; 06                CALL taste
+BA5 ; 07                CALL loeschen
 132 ; 08                MOVI #3,X           gelb
-BB8 ; 09                CALL farbe
+BB7 ; 09                CALL farbe
 1B2 ; 0A                MOVI #B,X           x = 3 +8 (sichtbar)
 143 ; 0B                MOVI #4,Y           y = 4
-BBC ; 0C                CALL punkt
-BA2 ; 0D                CALL taste
+BBB ; 0C                CALL punkt
+BA1 ; 0D                CALL taste
 142 ; 0E                MOVI #4,X           gruen
-BB8 ; 0F                CALL farbe
-112 ; 10                MOVI #1,X           Cursor 1 = (1,1), stumm (Art 0: nur Farbmatrix)
+BB7 ; 0F                CALL farbe
+112 ; 10                MOVI #1,X           Cursor 1 = (1,1), stumm (Art 0: nur Farbebene)
 113 ; 11                MOVI #1,Y
-BBC ; 12                CALL punkt
+BBB ; 12                CALL punkt
 1E2 ; 13                MOVI #E,X           Cursor 2 = (6,5)
 153 ; 14                MOVI #5,Y
-BBE ; 15                CALL rechteck
-BA2 ; 16                CALL taste
+BBD ; 15                CALL rechteck
+BA1 ; 16                CALL taste
 162 ; 17                MOVI #6,X           blau
-BB8 ; 18                CALL farbe
+BB7 ; 18                CALL farbe
 102 ; 19                MOVI #0,X           Cursor 1 = (0,0), stumm
 103 ; 1A                MOVI #0,Y
-BBC ; 1B                CALL punkt
+BBB ; 1B                CALL punkt
 1F2 ; 1C                MOVI #F,X           (7,7)
 173 ; 1D                MOVI #7,Y
-BC0 ; 1E                CALL rahmen
-BA2 ; 1F                CALL taste
+BBF ; 1E                CALL rahmen
+BA1 ; 1F                CALL taste
 1A2 ; 20                MOVI #A,X           (2,2), x+8 und y+8 = Art 3
 1A3 ; 21                MOVI #A,Y
-BBC ; 22                CALL punkt
+BBB ; 22                CALL punkt
 1D2 ; 23                MOVI #D,X           (5,5)
 1D3 ; 24                MOVI #D,Y
-BBE ; 25                CALL rechteck
-BA2 ; 26                CALL taste
+BBD ; 25                CALL rechteck
+BA1 ; 26                CALL taste
 122 ; 27                MOVI #2,X           (2,2), nur y+8 = Art 2
 1A3 ; 28                MOVI #A,Y
-BBC ; 29                CALL punkt
+BBB ; 29                CALL punkt
 152 ; 2A                MOVI #5,X           (5,5)
 1D3 ; 2B                MOVI #D,Y
-BBE ; 2C                CALL rechteck
-BA2 ; 2D                CALL taste
-BA6 ; 2E                CALL loeschen
+BBD ; 2C                CALL rechteck
+BA1 ; 2D                CALL taste
+BA5 ; 2E                CALL loeschen
 182 ; 2F                MOVI #8,X           magenta
-BB8 ; 30                CALL farbe
+BB7 ; 30                CALL farbe
 102 ; 31                MOVI #0,X           Start (0,7), stumm
 173 ; 32                MOVI #7,Y
-BBC ; 33                CALL punkt
+BBB ; 33                CALL punkt
 1F2 ; 34                MOVI #F,X           -> (7,7)
-BC2 ; 35                CALL linie
+BC1 ; 35                CALL linie
 182 ; 36                MOVI #8,X           -> (0,0), schraeg
 103 ; 37                MOVI #0,Y
-BC2 ; 38                CALL linie
+BC1 ; 38                CALL linie
 1F2 ; 39                MOVI #F,X           -> (7,0)
-BC2 ; 3A                CALL linie
-BA2 ; 3B                CALL taste
+BC1 ; 3A                CALL linie
+BA1 ; 3B                CALL taste
 192 ; 3C                MOVI #9,X           rechts + Umlauf
 176 ; 3D                MOVI #7,I           8 Mal
-BC4 ; 3E s_rechts:      CALL schieben
+BC3 ; 3E s_rechts:      CALL schieben
 5F6 ; 3F                ADDI #F,I           I-1, Carry solange I >= 1 war
 D3E ; 40                BRC s_rechts
 1A2 ; 41                MOVI #A,X           hoch + Umlauf
 176 ; 42                MOVI #7,I
-BC4 ; 43 s_hoch:        CALL schieben
+BC3 ; 43 s_hoch:        CALL schieben
 5F6 ; 44                ADDI #F,I
 D43 ; 45                BRC s_hoch
-BA2 ; 46                CALL taste
-112 ; 47                MOVI #1,X           umschalten
-156 ; 48                MOVI #5,I           6 Mal, am Ende wieder an
-BC6 ; 49 blinken:       CALL anzeige
-5F6 ; 4A                ADDI #F,I
-D49 ; 4B                BRC blinken
-BA2 ; 4C                CALL taste
-BA6 ; 4D                CALL loeschen
-137 ; 4E                MOVI #3,J           4 x 16 = 64 Funken
-1F6 ; 4F gl_aussen:     MOVI #F,I
-BAD ; 50 gl_innen:      CALL zfarbe         zufaellige Farbe 0-7 (0 = schwarz loescht den Funken)
-BB1 ; 51                CALL zpos           zufaelliger Punkt, sichtbar
-BBC ; 52                CALL punkt
-5F6 ; 53                ADDI #F,I
-D50 ; 54                BRC gl_innen
-5F7 ; 55                ADDI #F,J
-D4F ; 56                BRC gl_aussen
-BA2 ; 57                CALL taste
-BA6 ; 58                CALL loeschen
-197 ; 59                MOVI #9,J           10 Vierecke
-BA8 ; 5A vieleck:       CALL zbunt
-BB1 ; 5B                CALL zpos           erste Ecke (x+8)
-029 ; 5C                MOV X,PX            merken, mit +8 fuer die letzte Linie
-03A ; 5D                MOV Y,PY
-372 ; 5E                ANDI #7,X           Cursor 1 stumm
-BBC ; 5F                CALL punkt
-12B ; 60                MOVI #2,ECKE        3 weitere Ecken
-BB1 ; 61 ecke:          CALL zpos
-BC2 ; 62                CALL linie
-5FB ; 63                ADDI #F,ECKE
-D61 ; 64                BRC ecke
-092 ; 65                MOV PX,X            zurueck zur ersten Ecke
-0A3 ; 66                MOV PY,Y
-BC2 ; 67                CALL linie
-5F7 ; 68                ADDI #F,J
-D5A ; 69                BRC vieleck
-BA2 ; 6A                CALL taste
-11C ; 6B                MOVI #1,RUNDE       2 Runden
-158 ; 6C r_runde:       MOVI #5,K           je 6 Bilder, Farben 6...9 bis 1...4
-106 ; 6D r_bild:        MOVI #0,I           Ring 0 ... 3
-087 ; 6E                MOV K,J
-517 ; 6F r_ring:        ADDI #1,J           Farbe = K + Ring + 1
-072 ; 70                MOV J,X
-BB8 ; 71                CALL farbe
-062 ; 72                MOV I,X             Cursor 1 = (i,i), stumm
-063 ; 73                MOV I,Y
-BBC ; 74                CALL punkt
-1F2 ; 75                MOVI #F,X           Cursor 2 = (7-i,7-i), x+8
-662 ; 76                SUB I,X
-173 ; 77                MOVI #7,Y
-663 ; 78                SUB I,Y
-BC0 ; 79                CALL rahmen
-516 ; 7A                ADDI #1,I
-946 ; 7B                CMPI #4,I
-E7E ; 7C                BRZ r_weiter
-C6F ; 7D                GOTO r_ring
-5F8 ; 7E r_weiter:      ADDI #F,K
-D6D ; 7F                BRC r_bild
-5FC ; 80                ADDI #F,RUNDE
-D6C ; 81                BRC r_runde
-BA2 ; 82                CALL taste
-106 ; 83                MOVI #0,I           Spalte 0 ... 7
-062 ; 84 rb_spalte:     MOV I,X             Farbe = Spalte + 1
-512 ; 85                ADDI #1,X
-BB8 ; 86                CALL farbe
-062 ; 87                MOV I,X             Cursor 1 = (i,0), stumm
-103 ; 88                MOVI #0,Y
-BBC ; 89                CALL punkt
-582 ; 8A                ADDI #8,X           Linie bis (i,7), sichtbar
-173 ; 8B                MOVI #7,Y
-BC2 ; 8C                CALL linie
-516 ; 8D                ADDI #1,I
-986 ; 8E                CMPI #8,I
-E91 ; 8F                BRZ rb_laufen
-C84 ; 90                GOTO rb_spalte
-182 ; 91 rb_laufen:     MOVI #8,X           links + Umlauf
-1F6 ; 92                MOVI #F,I           16 Mal
-BC4 ; 93 rb_schritt:    CALL schieben
-5F6 ; 94                ADDI #F,I
-D93 ; 95                BRC rb_schritt
-BA2 ; 96                CALL taste
-BA6 ; 97                CALL loeschen
-1F6 ; 98                MOVI #F,I           16 Strahlen
-BA8 ; 99 strahl:        CALL zbunt
-132 ; 9A                MOVI #3,X           Mitte (3,3), stumm
-133 ; 9B                MOVI #3,Y
-BBC ; 9C                CALL punkt
-BB1 ; 9D                CALL zpos
-BC2 ; 9E                CALL linie
-5F6 ; 9F                ADDI #F,I
-D99 ; A0                BRC strahl
-C00 ; A1                GOTO start
-515 ; A2 taste:         ADDI #1,NR
-F15 ; A3                DISP #1,NR
-FF4 ; A4                KIN TASTE
-F07 ; A5                RET
-132 ; A6 loeschen:      MOVI #3,X
-CBA ; A7                GOTO ganz
-F05 ; A8 zbunt:         RND
-0F2 ; A9                MOV ZF,X
-372 ; AA                ANDI #7,X
-512 ; AB                ADDI #1,X
-CB8 ; AC                GOTO farbe
-F05 ; AD zfarbe:        RND
-0F2 ; AE                MOV ZF,X
-372 ; AF                ANDI #7,X
-CB8 ; B0                GOTO farbe
-F05 ; B1 zpos:          RND
-0D2 ; B2                MOV ZX,X
-372 ; B3                ANDI #7,X
-582 ; B4                ADDI #8,X
-0E3 ; B5                MOV ZY,Y
-373 ; B6                ANDI #7,Y
-F07 ; B7                RET
-1E1 ; B8 farbe:         MOVI #E,FUNC        ACK 14 aktive Farbe (1 Nibble)
-CC7 ; B9                GOTO cmd
-131 ; BA ganz:          MOVI #3,FUNC        ACK 3 ganze Matrix (1 Nibble)
-CC7 ; BB                GOTO cmd
-141 ; BC punkt:         MOVI #4,FUNC        ACK 4 Cursor 1 / Punkt
-CC7 ; BD                GOTO cmd
-161 ; BE rechteck:      MOVI #6,FUNC        ACK 6 Rechteck gefuellt
-CC7 ; BF                GOTO cmd
-171 ; C0 rahmen:        MOVI #7,FUNC        ACK 7 Rahmen
-CC7 ; C1                GOTO cmd
-181 ; C2 linie:         MOVI #8,FUNC        ACK 8 Linie, Cursor 1 folgt
-CC7 ; C3                GOTO cmd
-1B1 ; C4 schieben:      MOVI #B,FUNC        ACK 11 schieben (1 Nibble)
-CC7 ; C5                GOTO cmd
-1F1 ; C6 anzeige:       MOVI #F,FUNC        ACK 15 Anzeige (1 Nibble)
-F02 ; C7 cmd:           DISOUT              Anzeige aus: sonst stimmt die Befehlsdauer nicht
-FD0 ; C8 warte:         DIN REQ             warten auf REQ
-310 ; C9                ANDI #1,REQ
-EC8 ; CA                BRZ warte
-FE1 ; CB                DOT FUNC            ACK
-FE2 ; CC                DOT X               Nibble 1
-FE3 ; CD                DOT Y               Nibble 2 (bei 1 Nibble ohne Bedeutung)
-100 ; CE                MOVI #0,REQ
-FE0 ; CF                DOT REQ             Ausgaenge auf 0
-F07 ; D0                RET
+BA1 ; 46                CALL taste
+1F2 ; 47                MOVI #F,X           Nibble nach dem ACK = F: kein Wechsel auf F, weckt nicht
+BC5 ; 48                CALL schlafen
+BA1 ; 49                CALL taste          Taste fuer A, die Matrix schlaeft
+FE2 ; 4A                DOT X               F nach der 0 von cmd: aufwachen
+FE0 ; 4B                DOT REQ             Ausgaenge auf 0 (REQ ist nach cmd 0), dann gilt das naechste ACK
+BA5 ; 4C                CALL loeschen
+137 ; 4D                MOVI #3,J           4 x 16 = 64 Funken
+1F6 ; 4E gl_aussen:     MOVI #F,I
+BAC ; 4F gl_innen:      CALL zfarbe         zufaellige Farbe 0-7 (0 = schwarz loescht den Funken)
+BB0 ; 50                CALL zpos           zufaelliger Punkt, sichtbar
+BBB ; 51                CALL punkt
+5F6 ; 52                ADDI #F,I
+D4F ; 53                BRC gl_innen
+5F7 ; 54                ADDI #F,J
+D4E ; 55                BRC gl_aussen
+BA1 ; 56                CALL taste
+BA5 ; 57                CALL loeschen
+197 ; 58                MOVI #9,J           10 Vierecke
+BA7 ; 59 vieleck:       CALL zbunt
+BB0 ; 5A                CALL zpos           erste Ecke (x+8)
+029 ; 5B                MOV X,PX            merken, mit +8 fuer die letzte Linie
+03A ; 5C                MOV Y,PY
+372 ; 5D                ANDI #7,X           Cursor 1 stumm
+BBB ; 5E                CALL punkt
+12B ; 5F                MOVI #2,ECKE        3 weitere Ecken
+BB0 ; 60 ecke:          CALL zpos
+BC1 ; 61                CALL linie
+5FB ; 62                ADDI #F,ECKE
+D60 ; 63                BRC ecke
+092 ; 64                MOV PX,X            zurueck zur ersten Ecke
+0A3 ; 65                MOV PY,Y
+BC1 ; 66                CALL linie
+5F7 ; 67                ADDI #F,J
+D59 ; 68                BRC vieleck
+BA1 ; 69                CALL taste
+11C ; 6A                MOVI #1,RUNDE       2 Runden
+158 ; 6B r_runde:       MOVI #5,K           je 6 Bilder, Farben 6...9 bis 1...4
+106 ; 6C r_bild:        MOVI #0,I           Ring 0 ... 3
+087 ; 6D                MOV K,J
+517 ; 6E r_ring:        ADDI #1,J           Farbe = K + Ring + 1
+072 ; 6F                MOV J,X
+BB7 ; 70                CALL farbe
+062 ; 71                MOV I,X             Cursor 1 = (i,i), stumm
+063 ; 72                MOV I,Y
+BBB ; 73                CALL punkt
+1F2 ; 74                MOVI #F,X           Cursor 2 = (7-i,7-i), x+8
+662 ; 75                SUB I,X
+173 ; 76                MOVI #7,Y
+663 ; 77                SUB I,Y
+BBF ; 78                CALL rahmen
+516 ; 79                ADDI #1,I
+946 ; 7A                CMPI #4,I
+E7D ; 7B                BRZ r_weiter
+C6E ; 7C                GOTO r_ring
+5F8 ; 7D r_weiter:      ADDI #F,K
+D6C ; 7E                BRC r_bild
+5FC ; 7F                ADDI #F,RUNDE
+D6B ; 80                BRC r_runde
+BA1 ; 81                CALL taste
+106 ; 82                MOVI #0,I           Spalte 0 ... 7
+062 ; 83 rb_spalte:     MOV I,X             Farbe = Spalte + 1
+512 ; 84                ADDI #1,X
+BB7 ; 85                CALL farbe
+062 ; 86                MOV I,X             Cursor 1 = (i,0), stumm
+103 ; 87                MOVI #0,Y
+BBB ; 88                CALL punkt
+582 ; 89                ADDI #8,X           Linie bis (i,7), sichtbar
+173 ; 8A                MOVI #7,Y
+BC1 ; 8B                CALL linie
+516 ; 8C                ADDI #1,I
+986 ; 8D                CMPI #8,I
+E90 ; 8E                BRZ rb_laufen
+C83 ; 8F                GOTO rb_spalte
+182 ; 90 rb_laufen:     MOVI #8,X           links + Umlauf
+1F6 ; 91                MOVI #F,I           16 Mal
+BC3 ; 92 rb_schritt:    CALL schieben
+5F6 ; 93                ADDI #F,I
+D92 ; 94                BRC rb_schritt
+BA1 ; 95                CALL taste
+BA5 ; 96                CALL loeschen
+1F6 ; 97                MOVI #F,I           16 Strahlen
+BA7 ; 98 strahl:        CALL zbunt
+132 ; 99                MOVI #3,X           Mitte (3,3), stumm
+133 ; 9A                MOVI #3,Y
+BBB ; 9B                CALL punkt
+BB0 ; 9C                CALL zpos
+BC1 ; 9D                CALL linie
+5F6 ; 9E                ADDI #F,I
+D98 ; 9F                BRC strahl
+C00 ; A0                GOTO start
+515 ; A1 taste:         ADDI #1,NR
+F15 ; A2                DISP #1,NR
+FF4 ; A3                KIN TASTE
+F07 ; A4                RET
+132 ; A5 loeschen:      MOVI #3,X
+CB9 ; A6                GOTO ganz
+F05 ; A7 zbunt:         RND
+0F2 ; A8                MOV ZF,X
+372 ; A9                ANDI #7,X
+512 ; AA                ADDI #1,X
+CB7 ; AB                GOTO farbe
+F05 ; AC zfarbe:        RND
+0F2 ; AD                MOV ZF,X
+372 ; AE                ANDI #7,X
+CB7 ; AF                GOTO farbe
+F05 ; B0 zpos:          RND
+0D2 ; B1                MOV ZX,X
+372 ; B2                ANDI #7,X
+582 ; B3                ADDI #8,X
+0E3 ; B4                MOV ZY,Y
+373 ; B5                ANDI #7,Y
+F07 ; B6                RET
+1E1 ; B7 farbe:         MOVI #E,FUNC        ACK 14 aktive Farbe (1 Nibble)
+CC6 ; B8                GOTO cmd
+131 ; B9 ganz:          MOVI #3,FUNC        ACK 3 ganze Matrix (1 Nibble)
+CC6 ; BA                GOTO cmd
+141 ; BB punkt:         MOVI #4,FUNC        ACK 4 Cursor 1 / Punkt
+CC6 ; BC                GOTO cmd
+161 ; BD rechteck:      MOVI #6,FUNC        ACK 6 Rechteck gefuellt
+CC6 ; BE                GOTO cmd
+171 ; BF rahmen:        MOVI #7,FUNC        ACK 7 Rahmen
+CC6 ; C0                GOTO cmd
+181 ; C1 linie:         MOVI #8,FUNC        ACK 8 Linie, Cursor 1 folgt
+CC6 ; C2                GOTO cmd
+1B1 ; C3 schieben:      MOVI #B,FUNC        ACK 11 schieben (1 Nibble)
+CC6 ; C4                GOTO cmd
+1F1 ; C5 schlafen:      MOVI #F,FUNC        ACK 15 schlafen (ohne Nibble)
+F02 ; C6 cmd:           DISOUT              Anzeige aus: sonst stimmt die Befehlsdauer nicht
+FD0 ; C7 warte:         DIN REQ             warten auf REQ
+310 ; C8                ANDI #1,REQ
+EC7 ; C9                BRZ warte
+FE1 ; CA                DOT FUNC            ACK
+FE2 ; CB                DOT X               Nibble 1
+FE3 ; CC                DOT Y               Nibble 2 (bei 1 Nibble ohne Bedeutung)
+100 ; CD                MOVI #0,REQ
+FE0 ; CE                DOT REQ             Ausgaenge auf 0
+F07 ; CF                RET

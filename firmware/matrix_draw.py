@@ -23,9 +23,10 @@
 #                   +12 Stapel leeren. Je Matrix ein Stapel mit STACK_MAX Plaetzen,
 #                   bei vollem Stapel faellt beim Push die aelteste Sicherung heraus.
 #                   Keine Aktion baut die Anzeige neu auf: sichtbar mit dem naechsten
-#                   Neuaufbau, sofort mit ACK 15 / 2.
+#                   Neuaufbau.
 #   14 f            aktive Farbe
-#   15 w            Anzeige: 1 umschalten, 2 an, 3 aus
+#   15 -            Schlafmodus (ohne Nibble, in main.py): REQ bleibt aus, bis der 2090
+#                   F auf die Ausgaenge legt. Die Anzeige bleibt stehen.
 # Zeichenart aus den beiden +8-Bits (x +8 -> Bit 0, y +8 -> Bit 1):
 #   0 nur Farbebene, 1 Farbe + Bits (Farbe 0 = Bit aus), 2 nur Bits an, 3 nur Bits aus
 
@@ -58,7 +59,7 @@ COLOR_NAMES = {
 }
 
 # Anzahl der Datennibbles je ACK (0 = Code ohne Bedeutung)
-NIBBLES = (0, 16, 0, 1, 2, 0, 2, 2, 2, 0, 2, 1, 0, 1, 1, 1)
+NIBBLES = (0, 16, 0, 1, 2, 0, 2, 2, 2, 0, 2, 1, 0, 1, 1, 0)
 
 OFF = (0, 0, 0)
 
@@ -73,7 +74,6 @@ class Matrix:
         self.c1x = self.c1y = 0
         self.c2x = self.c2y = 0
         self.paint = 1
-        self.active = True
         self.stack_bits = []                # ACK 13: Stapel der Bitmatrix
         self.stack_colors = []              # ACK 13: Stapel der Farbmatrix
 
@@ -197,17 +197,6 @@ class Matrix:
         if ack == 14:
             self.paint = data[0] & 15
             return False
-        if ack == 15:
-            w = data[0]
-            if w == 1:
-                self.active = not self.active
-            elif w == 2:
-                self.active = True
-            elif w == 3:
-                self.active = False
-            else:
-                return False
-            return True
         return False
 
     def _stack(self, w):
@@ -236,11 +225,10 @@ class Matrix:
     def render(self, np):
         """Schreibt beide Ebenen in den LED-Puffer (Verdrahtung: np[x * 8 + y])."""
         pal, bits, cols = self.palette, self.bits, self.colors
-        on = self.active
         for y in range(ROWS):
             for x in range(COLS):
                 i = y * COLS + x
-                np[x * ROWS + y] = pal[cols[i]] if (on and bits[i]) else OFF
+                np[x * ROWS + y] = pal[cols[i]] if bits[i] else OFF
 
     # ---------- fuer User-Scripts ----------
     def set_colors(self, names):
