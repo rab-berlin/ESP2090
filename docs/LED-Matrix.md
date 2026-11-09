@@ -4,7 +4,7 @@ Die 8x8-LED-Matrix ist ein Sonderfall der Kommunikation über die Ein- und Ausg�
 
 Es gibt zwei Arten, die Matrix zu benutzen, und beide lassen sich in einem Programm mischen:
 
-- **Blockmodus:** Der 2090 schickt ein ganzes Bild: 16 Register mit je 4 Bit = 64 Pixel. So arbeitet z. B. die [BerlinUhr](../program/berlinuhr).
+- **Blockmodus:** Der 2090 schickt ein ganzes Bild: 16 Register mit je 4 Bit = 64 Pixel. So arbeitet z. B. die [BerlinUhr2090](https://github.com/rab-berlin/BerlinUhr2090).
 - **Zeichenmodus:** Der 2090 schickt kurze Befehle mit ein oder zwei Nibbles: Punkt, Rechteck, Rahmen, Linie, Farbe, Schieben … So kommt man mit wenigen Befehlen zu bunten Bildern und spart Register.
 
 ## Zwei Ebenen: Bitmatrix und Farbmatrix
@@ -153,16 +153,17 @@ B..  CALL punkt
 
 ## Farben aus einem Userscript
 
-Statt mit ACK 14 und Zeichenart 0 kann man die Farbmatrix auch von einem Userscript aus füllen: `setColors(liste)` erwartet 64 Farbnamen, oberste Zeile zuerst (`"schwarz"`, `"rot"`, `"orange"`, `"gelb"`, `"gruen"`, `"tuerkis"`, `"blau"`, `"violett"`, `"magenta"`, `"weiss"`). So macht es die BerlinUhr mit [farbmatrix.py](../program/berlinuhr/farbmatrix.py): Das Script setzt einmal die Farben und endet, danach schickt der 2090 nur noch Bilder im Blockmodus.
+Statt mit ACK 14 und Zeichenart 0 kann man die Farbmatrix auch von einem Userscript aus füllen: `setColors(liste)` erwartet 64 Farbnamen, oberste Zeile zuerst (`"schwarz"`, `"rot"`, `"orange"`, `"gelb"`, `"gruen"`, `"tuerkis"`, `"blau"`, `"violett"`, `"magenta"`, `"weiss"`). So macht es die BerlinUhr mit [farbmatrix.py](https://github.com/rab-berlin/BerlinUhr2090/blob/main/program/farbmatrix.py): Das Script setzt einmal die Farben und endet, danach schickt der 2090 nur noch Bilder im Blockmodus.
 
 ## Beispiele
 
 | Programm | Was es zeigt |
 |---|---|
 | [demo_matrix](../program/demo_matrix) | Vorführung aller Zeichenbefehle: Jede Taste am 2090 zeigt die nächste (ganze Matrix, Punkt, Rechteck, Rahmen, Ausschnitt aus- und einblenden, Linienzug, Schieben, Anzeige an/aus, Glitter, bunte Vielecke, Rahmen mit laufenden Farben, Regenbogen, Feuerwerk). 209 Befehle. |
-| [film_color](../program/film_color) | Ein kleiner Film mit farbigen Pixeln: Bilder im Blockmodus, Farben im Zeichenmodus mit Zeichenart 0. Nutzt alle 256 Befehle. |
-| [berlinuhr](../program/berlinuhr) | Die Berliner Mengenlehreuhr: Bilder im Blockmodus, Farben per Userscript. |
+| [Film2090](https://github.com/rab-berlin/Film2090) | Ein kleiner Film mit farbigen Pixeln: Bilder im Blockmodus, Farben im Zeichenmodus mit Zeichenart 0. Nutzt alle 256 Befehle. |
+| [BerlinUhr2090](https://github.com/rab-berlin/BerlinUhr2090) | Die Berliner Mengenlehreuhr: Bilder im Blockmodus, Farben per Userscript. |
+| [Life2090](https://github.com/rab-berlin/Life2090) | Conways Game of Life: Bilder im Blockmodus. |
 
-Die `.mic`-Dateien sind ausführlich kommentiert.
+demo_matrix liegt hier als kommentierte `.mic`-Datei; Film2090, BerlinUhr2090 und Life2090 haben eigene Repos mit ausführlicher Beschreibung.
 
 **So startest du ein Beispiel:** `.mic`-Datei mit **Upload** in der Weboberfläche zum 2090 übertragen, Programm auf dem 2090 starten, in der Weboberfläche **LED on** drücken.
