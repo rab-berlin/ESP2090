@@ -185,6 +185,13 @@ button.ctl {
     background:#3c3;
     box-shadow:0 0 8px 2px #3c3;
 }
+#ledState.sleep {
+    color:#fb3;
+}
+#ledState.sleep .dot {
+    background:#fb3;
+    box-shadow:0 0 6px 1px #fb3;
+}
 #ledState.off {
     color:#e44;
 }
@@ -383,13 +390,14 @@ const btnLed = document.getElementById("btnLed");
 let matrixOn = false;
 
 // LED-Toggle: Beschriftung = was ein Klick tut; Zustand rechts daneben
-// (gruener Punkt = Matrix aktiv, roter Punkt = inaktiv; Text nur als Tooltip)
+// (gruener Punkt = Matrix aktiv, gelber Punkt = schlaeft (ACK 15), roter Punkt = inaktiv;
+// Text nur als Tooltip)
 const ledState = document.getElementById("ledState");
-function showMatrixState(on){
+function showMatrixState(on, asleep){
     matrixOn = on;
     btnLed.textContent = on ? "LED off" : "LED on";
-    ledState.className = on ? "on" : "off";
-    ledState.title = on ? "LED matrix active" : "LED matrix inactive";
+    ledState.className = !on ? "off" : asleep ? "sleep" : "on";
+    ledState.title = !on ? "LED matrix inactive" : asleep ? "LED matrix asleep (2090 sent ACK 15)" : "LED matrix active";
 }
 
 // Dateiauswahl: Name im Feld neben "Upload" anzeigen
@@ -453,7 +461,7 @@ async function pollStatus(){
         btnG.disabled = !scriptRunning;
         btnH.disabled = !scriptRunning;
 
-        showMatrixState(s.matrix === 1);
+        showMatrixState(s.matrix === 1, s.sleep === 1);
         if (s.px !== undefined) drawMatrix(s.px);
         matrixVersion = s.mv;
     } catch(e) {

@@ -40,6 +40,7 @@ def getInputs():
 import matrix_draw
 
 matrix_tasks_running = False
+matrix_asleep = False        # ACK 15: Schlafmodus, REQ bleibt Low bis F auf den Ausgaengen
 matrix_display_task_handle = None
 matrix_task_handle = None
 
@@ -56,6 +57,8 @@ WAIT_AFTER_1 = 13500         # ACK 1: erstes Nibble wird WAIT_AFTER_1 + NIBBLE_I
 WAIT_AFTER_ACK = 13500       # ACK 2-15: erstes Nibble wird WAIT_AFTER_ACK nach ack_time gelesen
 NIBBLE_INTERVAL = 9217
 NUM_NIBBLES = 16
+SLEEP_ACK = 15               # ACK 15: schlafen (ohne Nibble)
+WAKE_POLL_MS = 1             # im Schlaf: Ausgaenge so oft lesen (das F steht mindestens 9 ms)
 
 # ----- Helligkeit begrenzen (Versorgung ueber USB) -----
 # Jede LED zieht je Farbkanal bei 255 etwa 20 mA. Ueber LED_MAX_MA wird das
@@ -116,25 +119,26 @@ class LimitedPixels:
 
 np = LimitedPixels(neopixel.NeoPixel(Pin(LED_PIN), NUM_LEDS))
 
-M = matrix_draw.Matrix()     # Bitebene, Farbebene, Cursor, Farbe, Anzeige an/aus
+M = matrix_draw.Matrix()     # Bitebene, Farbebene, Cursor, Farbe, Stapel
 matrix_dirty = True # initial
 
 
 def start_matrix_tasks():
-    global matrix_display_task_handle, matrix_task_handle, matrix_tasks_running
+    global matrix_display_task_handle, matrix_task_handle, matrix_tasks_running, matrix_asleep
 
     if matrix_tasks_running:
         log("LED task already running")
         return
     
     log("LED task started")
+    matrix_asleep = False
     matrix_display_task_handle = asyncio.create_task(matrix_display_task())
     matrix_task_handle = asyncio.create_task(matrix_task())
     matrix_tasks_running = True
     
 
 def stop_matrix_tasks():
-    global matrix_display_task_handle, matrix_task_handle, matrix_tasks_running
+    global matrix_display_task_handle, matrix_task_handle, matrix_tasks_running, matrix_asleep
 
     if not matrix_tasks_running:
         log("Matrix already stopped")
@@ -150,6 +154,7 @@ def stop_matrix_tasks():
     out_1.value(0)   # REQ Low
 
     matrix_tasks_running = False
+    matrix_asleep = False
     log("LED task stopped")
 
 
@@ -195,12 +200,36 @@ def matrix_print_console(matrix):
     print()
     
 
+async def matrix_wait_wake():
+    """Schlafmodus nach ACK 15: REQ bleibt Low, der 2090 kann Eingang 1 und die
+    Ausgaenge frei benutzen (Taster, Keypad). Geweckt wird mit F auf den Ausgaengen:
+    ein Wechsel auf F, der 0,7 ms spaeter noch steht. Das F des ACK 15 selbst
+    zaehlt nicht (prev beginnt mit F)."""
+    global matrix_asleep
+    prev = 15
+    while True:
+        v = (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111
+        if v == 15 and prev != 15:
+            time.sleep_us(WAIT_AFTER_DETECT)
+            if (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111 == 15:
+                matrix_asleep = False
+                return
+        prev = v
+        await asyncio.sleep_ms(WAKE_POLL_MS)
+
+
 async def matrix_task():
     
-    global matrix_dirty
+    global matrix_dirty, matrix_asleep
     nibbles_of = matrix_draw.NIBBLES
 
     while True:
+
+        # Schlafmodus (ACK 15): kein REQ, bis der 2090 mit F weckt.
+        # Danach sofort REQ; ein ACK gilt wie immer erst nach einer 0.
+        if matrix_asleep:
+            await matrix_wait_wake()
+            continue
         
         # =========================
         # 1. REQ setzen
@@ -274,6 +303,9 @@ async def matrix_task():
                 next_time = time.ticks_add(next_time, NIBBLE_INTERVAL)
             
             matrix_dirty = True
+
+        elif ack == SLEEP_ACK:
+            matrix_asleep = True
 
         elif nibbles_of[ack]:
             # ACK 2-15: Nibbles direkt im naechsten Schritt, gelesen in dessen Mitte
@@ -822,6 +854,7 @@ async def status(req):
     s = {
         "running": 1 if current_task and not current_task.done() else 0,
         "matrix": 1 if matrix_tasks_running else 0,
+        "sleep": 1 if matrix_tasks_running and matrix_asleep else 0,
         "lv": log_version,
         "mv": np.version,
     }
