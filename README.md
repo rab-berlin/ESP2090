@@ -104,7 +104,7 @@ Ein Protokoll ist nichts weiter als eine Verabredung: Wer legt wann welches Nibb
 
 - **Userscripts in Python.** Ein kleines Programm auf dem ESP wartet auf Daten an den Ausgängen des Microtronic und/oder legt etwas auf seine Eingänge – nach einem Protokoll, das du selbst festlegst (Nibblefolgen, Anfrage und Antwort, Timing). Beispiele: ein Klavier mit dem Buzzer, ein Zähler mit den Tasten der Weboberfläche und echte Zufallszahlen für den 2090. → [Userscripts](docs/Userscripts.md)
 
-- **Die LED-Matrix als Bildschirm.** Ein Sonderfall, fest in die Firmware eingebaut: Der Microtronic schickt entweder ganze Bilder (16 Nibbles, „Blockmodus“) oder kurze Zeichenbefehle für Punkt, Rechteck, Rahmen, Linie, Farbe und Schieben („Zeichenmodus“). Weil das Timing hier auf die Millisekunde stimmen muss, ist das Protokoll genau beschrieben – mit Bildern und Beispielprogrammen. → [LED-Matrix](docs/LED-Matrix.md)
+- **Die LED-Matrix als Bildschirm.** Ein Sonderfall, fest in die Firmware eingebaut: Der Microtronic schickt entweder ganze Bilder (16 Register, „Blockmodus“) oder kurze Zeichenbefehle für Punkt, Rechteck, Rahmen, Linie, Farbe und Schieben („Zeichenmodus“). Weil das Timing hier auf die Millisekunde stimmen muss, ist das Protokoll genau beschrieben – mit Bildern und Beispielprogrammen. → [LED-Matrix](docs/LED-Matrix.md)
 
 ## Beispiele
 

@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+<defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,2 L10,5 L0,8 z" fill="#222"/></marker></defs>
+<rect width="720" height="400" fill="white"/>
+<text x="20.0" y="28.0" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="start" fill="#222" font-weight="bold">Blockmodus: welches Register welche Pixel</text>
+<rect x="70" y="302" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="88.0" y="324.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R0</text>
+<rect x="106" y="302" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="142" y="302" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="178" y="302" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="214" y="302" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<text x="232.0" y="324.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R1</text>
+<rect x="250" y="302" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="286" y="302" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="322" y="302" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="70" y="266" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<text x="88.0" y="288.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R2</text>
+<rect x="106" y="266" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="142" y="266" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="178" y="266" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="214" y="266" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="232.0" y="288.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R3</text>
+<rect x="250" y="266" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="286" y="266" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="322" y="266" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="70" y="230" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="88.0" y="252.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R4</text>
+<rect x="106" y="230" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="142" y="230" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="178" y="230" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="214" y="230" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<text x="232.0" y="252.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R5</text>
+<rect x="250" y="230" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="286" y="230" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="322" y="230" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="70" y="194" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<text x="88.0" y="216.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R6</text>
+<rect x="106" y="194" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="142" y="194" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="178" y="194" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="214" y="194" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="232.0" y="216.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R7</text>
+<rect x="250" y="194" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="286" y="194" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="322" y="194" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="70" y="158" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="88.0" y="180.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R8</text>
+<rect x="106" y="158" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="142" y="158" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="178" y="158" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="214" y="158" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<text x="232.0" y="180.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">R9</text>
+<rect x="250" y="158" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="286" y="158" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="322" y="158" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="70" y="122" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<text x="88.0" y="144.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">RA</text>
+<rect x="106" y="122" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="142" y="122" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="178" y="122" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="214" y="122" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="232.0" y="144.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">RB</text>
+<rect x="250" y="122" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="286" y="122" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="322" y="122" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="70" y="86" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="88.0" y="108.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">RC</text>
+<rect x="106" y="86" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="142" y="86" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="178" y="86" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="214" y="86" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<text x="232.0" y="108.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">RD</text>
+<rect x="250" y="86" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="286" y="86" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="322" y="86" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="70" y="50" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<text x="88.0" y="72.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">RE</text>
+<rect x="106" y="50" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="142" y="50" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="178" y="50" width="36" height="36" fill="#d6eaf8" stroke="#bbb"/>
+<rect x="214" y="50" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="232.0" y="72.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333" font-weight="normal">RF</text>
+<rect x="250" y="50" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="286" y="50" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<rect x="322" y="50" width="36" height="36" fill="#fdebd0" stroke="#bbb"/>
+<text x="88.0" y="354.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222" font-weight="normal">0</text>
+<text x="60.0" y="324.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="normal">0</text>
+<text x="124.0" y="354.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222" font-weight="normal">1</text>
+<text x="60.0" y="288.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="normal">1</text>
+<text x="160.0" y="354.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222" font-weight="normal">2</text>
+<text x="60.0" y="252.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="normal">2</text>
+<text x="196.0" y="354.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222" font-weight="normal">3</text>
+<text x="60.0" y="216.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="normal">3</text>
+<text x="232.0" y="354.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222" font-weight="normal">4</text>
+<text x="60.0" y="180.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="normal">4</text>
+<text x="268.0" y="354.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222" font-weight="normal">5</text>
+<text x="60.0" y="144.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="normal">5</text>
+<text x="304.0" y="354.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222" font-weight="normal">6</text>
+<text x="60.0" y="108.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="normal">6</text>
+<text x="340.0" y="354.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222" font-weight="normal">7</text>
+<text x="60.0" y="72.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="normal">7</text>
+<text x="214.0" y="374.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#555" font-weight="normal">Bit 0 1 2 3 | Bit 0 1 2 3</text>
+<text x="388.0" y="70.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">Jede Zeile = zwei Register:</text>
+<text x="388.0" y="90.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">gerades Register links, ungerades rechts.</text>
+<text x="388.0" y="110.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">Bit 0 (Wert 1) ist das linke Pixel der Hälfte.</text>
+<text x="388.0" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal"></text>
+<text x="388.0" y="150.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">Beispiel: R0 = F, R1 = 0</text>
+<text x="388.0" y="170.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="normal">→ linke Hälfte der untersten Zeile an.</text>
+</svg>

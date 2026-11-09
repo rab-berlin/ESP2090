@@ -11,5 +11,5 @@ color_matrix = [
     ["orange","orange","orange","orange","orange","orange","orange","orange"],
 ]
 
-# seit Firmware v1.4 erwartet setColors 64 Namen, oberste Zeile zuerst
+# setColors erwartet 64 Farbnamen, oberste Zeile zuerst
 setColors([farbe for zeile in color_matrix for farbe in zeile])
