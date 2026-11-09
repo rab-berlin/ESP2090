@@ -26,6 +26,7 @@ Zwischen den beiden laufen nur 4 Bit in jede Richtung, und keiner kann dem ander
 Ein paar Hinweise aus der Praxis:
 
 - **Nicht auf feste Zeiten bauen.** Mit eingeschalteter Anzeige ist der 2090 langsamer, und auch der ESP hat nebenbei zu tun (Webserver). Lieber warten, bis sich etwas ändert, als eine bestimmte Zeit abzuzählen. Feste Zeiten braucht nur die [LED-Matrix](LED-Matrix.md), die deshalb in der Firmware eingebaut ist.
+- **Ausgänge schalten nacheinander.** Ein `DOT` des 2090 schaltet die vier Ausgänge nicht gleichzeitig, sondern innerhalb von etwa 166 µs nacheinander (Bild im Abschnitt [Wie die Übertragung abläuft](LED-Matrix.md#wie-die-übertragung-abläuft)). Wer genau dann liest, bekommt einen Zwischenwert. Wo es darauf ankommt: nach einer Änderung kurz warten (1 ms) und noch einmal lesen.
 - **Ruhezustand 0.** Wenn alle Ausgänge auf 0 stehen, „sagt niemand etwas“. Wer einen Wert gesendet hat, setzt am Ende wieder 0.
 - **Matrix und Userscript nicht gleichzeitig an denselben Leitungen.** Die LED-Matrix benutzt Eingang 1 (Anfrage) und alle vier Ausgänge. Wer die Matrix eingeschaltet hat („LED on“), sollte kein Userscript laufen lassen, das ebenfalls darauf hört oder Eingang 1 setzt.
 

@@ -34,6 +34,10 @@ Der 2090 hat keinen Takt, den der ESP sehen könnte. Die beiden verabreden desha
 
 1. **Anfrage (REQ):** Der ESP setzt Eingang 1 des 2090 auf 1. Ein ACK erkennt er erst, nachdem die Ausgänge des 2090 einmal auf 0 standen.
 2. **Antwort (ACK):** Der 2090 wartet in einer Schleife auf REQ (`DIN`, `ANDI`, `BRZ`) und legt dann mit `DOT` eine Befehlsnummer 1–15 auf seine Ausgänge. Der ESP erkennt sie, liest nach 0,7 ms zur Kontrolle noch einmal und nimmt REQ zurück.
+
+   Die Kontrolle ist nötig, weil der 2090 langsam ist: Ein `DOT` schaltet die vier Ausgänge nicht gleichzeitig, sondern nacheinander, der ganze Vorgang dauert etwa 166 µs. Im Bild wechseln die Ausgänge von 1110 auf 0000, Ausgang 2, 3 und 4 fallen jeweils gut 50 µs nacheinander. Würde der ESP den ersten Wert nehmen, den er sieht, bekäme er oft einen Zwischenwert. Nach 0,7 ms steht der Wert sicher.
+
+   ![Der 2090 schaltet seine Ausgänge nacheinander (Logic-Analyzer)](bilder/2090-ausgaenge-nacheinander.jpg)
 3. **Daten:** Danach gibt der 2090 in jedem Befehlsschritt ein Nibble mit `DOT` aus, im Blockmodus 16, im Zeichenmodus ein oder zwei. Der ESP liest jeweils in der Mitte des Schritts. Die genauen Zeiten stehen bei den beiden Modi.
 4. **Ende:** Der 2090 setzt seine Ausgänge wieder auf 0. Erst danach erkennt der ESP das nächste ACK – ein Wert, der auf den Ausgängen liegen bleibt, wird also nicht doppelt gelesen.
 
