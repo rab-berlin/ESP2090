@@ -6,7 +6,6 @@ Neu in Version 5: Firmware v1.5 (Weboberflaeche mit Matrix-Anzeige, Pruefung der
   auf dem ESP erprobt
 Neu in Version 4: Einrichtungsportal ueberarbeitet (Auswahl aus Liste, Sonderzeichen, Neustart nach 5 Minuten)
 Neu in Version 3: Fehler in install_windows.bat behoben (Abbruch ohne wifi.json)
-Neu in Version 2: Abschnitt "Weitere Boards klonen" (Komplett-Image mit esptool)
 
 
 INHALT DES PAKETS
@@ -139,60 +138,6 @@ HINWEISE ZUM BETRIEB
      * time.sleep / sleep_ms / sleep_us oder input() vorkommt.
    Pausen in Schleifen: await asyncio.sleep_ms(20). Beim Speichern
    erscheint bereits eine Warnung (orange), gespeichert wird trotzdem.
- - Logs gibt es nur in der Weboberflaeche, nicht mehr als Datei.
-   Ein alter Ordner "logs" auf dem ESP kann geloescht werden.
-
-
-WEITERE BOARDS KLONEN: KOMPLETT-IMAGE MIT ESPTOOL
-------------------------------------------------
-Ist ein ESP fertig eingerichtet, kann man seinen kompletten Flash
-(Bootloader, MicroPython, alle Dateien) in eine Datei lesen und damit
-weitere Boards in einem Schritt flashen.
-
- 1. esptool installieren (einmalig):
-      pip install esptool
-    Pruefen:  esptool version
-    Hinweis: Ab esptool 5 heissen die Befehle read-flash, write-flash,
-    erase-flash, flash-id (mit Bindestrich). Aeltere Versionen:
-    esptool.py read_flash usw. (mit Unterstrich).
-
- 2. Port herausfinden (Thonny muss GESCHLOSSEN sein):
-      Windows: Geraete-Manager -> "Anschluesse (COM & LPT)" -> z. B. COM5
-      Mac:     ls /dev/cu.usbmodem*
-      Linux:   meist /dev/ttyACM0
-    In den Befehlen unten COM5 durch den eigenen Port ersetzen.
-
- 3. Master-ESP vorbereiten (WICHTIG). Mit Thonny auf dem ESP loeschen:
-      - wifi.json   (sonst stecken die WLAN-Zugangsdaten im Image!)
-      - Ordner logs und busch_upload.mic, falls noch von alten
-        Firmware-Staenden vorhanden (werden nicht mehr angelegt)
-    Alles andere (auch die Userscripts) kommt mit ins Image.
-
- 4. Flash-Groesse pruefen:
-      esptool --port COM5 flash-id
-    Ausgabe z. B. "Detected flash size: 4MB" (beim SuperMini normal).
-
- 5. Image auslesen (4 MB = 0x400000, dauert ca. 1 Minute):
-      esptool --chip esp32c3 --port COM5 read-flash 0 0x400000 esp2090_image.bin
-
- 6. Image auf einen neuen ESP schreiben:
-      esptool --chip esp32c3 --port COM5 erase-flash
-      esptool --chip esp32c3 --port COM5 write-flash 0x0 esp2090_image.bin
-    Danach RST druecken oder USB kurz abziehen. Anschliessend die
-    eigene wifi.json hochladen (oder den Einrichtungsmodus nutzen).
-
- Gut zu wissen:
-  - Erkennt esptool den ESP nicht: BOOT-Taste halten, USB einstecken,
-    BOOT loslassen, Befehl wiederholen.
-  - Jedes Board behaelt seine eigene MAC-Adresse (steht im Chip,
-    nicht im Flash).
-  - Das Image passt nur zu gleicher Hardware (ESP32-C3, 4 MB Flash).
-  - Kontrolle: Ein frisch geklonter ESP ohne wifi.json muss im
-    Einrichtungsmodus starten (WLAN "ESP32-Setup"). Verbindet er sich
-    direkt mit dem eigenen WLAN, steckten doch Zugangsdaten im Image.
-  - Ohne Kommandozeile: Im Chrome- oder Edge-Browser das Web-Tool
-    https://espressif.github.io/esptool-js oeffnen, "Connect",
-    Adresse 0x0 eintragen, Datei esp2090_image.bin waehlen, "Program".
 
 
 FEHLERSUCHE

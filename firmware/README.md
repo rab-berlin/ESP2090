@@ -14,7 +14,7 @@ Die _"Firmware"_ für das ESP2090-Studio (Stand: **v1.5**, 09.11.2026) besteht a
 
 Die WLAN-Zugangsdaten stehen in **wifi.json** (Vorlage: `wifi.json.beispiel`). Fehlt sie, startet der ESP im Einrichtungsmodus (WLAN „ESP32-Setup“) und fragt im Browser nach dem Netz.
 
-Außerdem gibt es auf dem ESP32 den Ordner **userscripts** für die Python-Skripte, die zur Laufzeit geladen und gestartet werden. Logdateien gibt es nicht mehr – das Log steht nur in der Weboberfläche.
+Außerdem gibt es auf dem ESP32 den Ordner **userscripts** für die Python-Skripte, die zur Laufzeit geladen und gestartet werden.
 
 Die Weboberfläche läuft auf Port 8080: `http://<IP-Adresse>:8080`. Links der Editor für User-Skripte, in der Mitte das Log und die Web-Taster G/H, rechts die LED-Matrix (live) mit den Knöpfen für Matrix an/aus, MIC-Upload zum 2090 und ESP-Reset.
 
