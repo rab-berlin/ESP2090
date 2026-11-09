@@ -1,0 +1,35 @@
+;; webtaster - Zaehler mit den Tasten G und H der Weboberflaeche
+;; Gehoert zum Userscript webtaster.py (muss auf dem ESP laufen).
+;;
+;; Bedienung: Programm starten, Userscript starten. In der Weboberflaeche
+;; zaehlt "Key G" (oder die Leertaste) hoch, "Key H" (oder die Taste H)
+;; herunter. Der Zaehlerstand 0-F steht in der Anzeige des 2090.
+;;
+;; Protokoll (nur in eine Richtung): Der ESP legt G auf Eingang 1 und H auf
+;; Eingang 2, solange die Taste gedrueckt ist (in der Weboberflaeche 0,5 s).
+;;
+;; Register: r0 Zaehler, r1 Eingaenge
+
+#define Z      r0
+#define E      r1
+
+start:
+MOVI #0,Z
+anzeige:
+DISP #1,Z           ; Zaehler anzeigen
+DIN E               ; Eingaenge lesen
+ANDI #1,E           ; Taste G (Eingang 1)?
+BRZ pruefe_h
+ADDI #1,Z           ; ja: hochzaehlen
+GOTO loslassen
+pruefe_h:
+DIN E
+ANDI #2,E           ; Taste H (Eingang 2)?
+BRZ anzeige
+SUBI #1,Z           ; ja: herunterzaehlen
+loslassen:
+DISP #1,Z
+DIN E               ; warten, bis keine Taste mehr gedrueckt ist
+ANDI #3,E
+BRZ anzeige
+GOTO loslassen

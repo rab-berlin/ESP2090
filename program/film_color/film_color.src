@@ -1,0 +1,336 @@
+;; film_color - ein "Film" mit farbigen Pixeln auf der 8x8-Matrix
+;; Fassung fuer Matrix-Protokoll v2 (main.py ab v1.4)
+;; Quelltext mit Sprungmarken und Mnemonics: film_color.src
+;;
+;; Unterprogramme nur mit Tiefe 1: der 2090 merkt sich nur EINE Ruecksprungadresse,
+;; deshalb ruft kein Unterprogramm ein anderes mit CALL auf (nur GOTO als Tail-Call).
+;;
+;; Register: R0 Warten auf REQ / Null, R1 ACK-Code, R2 x bzw. Datennibble, R3 y
+;; Bild: Nibble 0-7 in der Ablage 0-7, Nibble 8-15 in R8-RF
+;; Befehle: ACK 4 (x,y) Cursor 1/Punkt, ACK 6 (x,y) Rechteck, ACK 14 Farbe, ACK 3 ganze Matrix
+;; Zeichenart ohne +8: nur Farbebene (sichtbar mit dem naechsten Bild), wie im alten Film
+
+; ---------- Start ----------
+start:
+F02                 ; DISOUT  Anzeige aus
+loop:
+F08                 ; CLEAR
+F0D                 ; EXRL
+F08                 ; CLEAR   R0-RF und Ablage 0-7 geloescht (Ablage 8-F wird nicht benutzt, kein EXRM noetig)
+1F0                 ; Startbild: Ablage 0,2,4,6 = F
+1F2
+1F4
+1F6
+F0D                 ; EXRL
+168                 ; R8 = 6
+
+; ---------- Szene 1: Blinken ----------
+B{blink_a}
+B{blink_b}
+B{blink_a}
+B{blink_b}
+B{blink_a}
+
+; Rechteck tuerkis (4,5)-(7,7)
+B{f_tuerkis}
+142                 ; x = 4
+153                 ; y = 5
+B{punkt}            ; Cursor 1
+172                 ; x = 7
+173                 ; y = 7
+B{rechteck}
+; Rechteck gelb (5,6)-(6,7)
+B{f_gelb}
+152                 ; x = 5
+163                 ; y = 6
+B{punkt}
+162                 ; x = 6
+173                 ; y = 7
+B{rechteck}
+
+; Bilder
+11C
+B{bild}
+11A
+13C
+11E
+B{bild}
+13A
+17C
+13E
+B{bild}
+17A
+1FC
+17E
+B{bild}
+1EA
+1FC
+17D
+1EE
+B{bild}
+
+B{f_tuerkis}
+152                 ; Punkt (5,6)
+163
+B{punkt}
+
+1CA
+11B
+1EC
+17D
+1CE
+17F
+B{bild}
+
+162                 ; Punkt (6,6)
+163
+B{punkt}
+152                 ; Punkt (5,7)
+173
+B{punkt}
+
+18A
+13B
+1CC
+17D
+18E
+17F
+B{bild}
+
+162                 ; Punkt (6,7)
+173
+B{punkt}
+
+10A
+17B
+18C
+1FD
+10E
+17F
+B{bild}
+
+149
+B{bild}
+
+119
+147
+F77
+B{bild}
+
+189
+F0D
+117
+145
+F0D
+B{bild}
+
+129
+F0D
+187
+115
+143
+F0D
+B{bild}
+
+109
+F0D
+127
+185
+113
+141
+F0D
+B{bild}
+
+F0D
+107
+125
+183
+151
+F0D
+B{bild}
+
+F0D
+105
+123
+1D1
+F0D
+B{bild}
+
+F0D
+103
+1F1
+F0D
+B{bild}
+
+1EB
+10C
+1FD
+1EF
+B{bild}
+
+B{f_gelb}
+152                 ; Punkt (5,7)
+173
+B{punkt}
+
+1CB
+1ED
+B{bild}
+
+162                 ; Punkt (6,7)
+173
+B{punkt}
+152                 ; Punkt (5,6)
+163
+B{punkt}
+
+18B
+B{bild}
+
+162                 ; Punkt (6,6)
+163
+B{punkt}
+
+10B
+16F
+B{bild}
+
+16D
+B{bild}
+
+B{f_rot}            ; Farbe rot
+B{ganz}             ; Farbebene wieder rot (zwei CALLs: der 2090 kann keine verschachtelten)
+
+; ---------- Szene 2 ----------
+B{blink_a}
+B{blink_b}
+B{blink_a}
+B{blink_b}
+B{blink_a}
+
+; Rechteck gruen (4,0)-(7,4)
+B{f_gruen}
+142                 ; x = 4
+103                 ; y = 0
+B{punkt}
+172                 ; x = 7
+143                 ; y = 4
+B{rechteck}
+
+101
+F71
+B{bild}
+
+1F1
+F71
+B{bild}
+
+143
+F73
+B{bild}
+
+145
+F75
+B{bild}
+
+147
+F77
+B{bild}
+
+; Rechteck magenta (4,2)-(7,4)
+B{f_magenta}
+142                 ; x = 4
+123                 ; y = 2
+B{punkt}
+172                 ; x = 7
+143                 ; y = 4
+B{rechteck}
+
+; Punkt orange (6,3)
+B{f_orange}
+162
+133
+B{punkt}
+
+1E7
+F77
+149
+B{bild}
+
+B{f_rot}
+B{ganz}
+C{loop}
+
+; ---------- Bild senden: ACK 1, EXRL, 16 Nibbles ----------
+bild:
+FD0                 ; DIN R0     warten auf REQ
+310                 ; ANDI 1,R0
+E{bild}             ; BRZ
+FE0                 ; DOT R0     ACK 1
+F0D                 ; EXRL       (der eine Befehl vor den Daten)
+FE0                 ; Nibble 0
+FE1
+FE2
+FE3
+FE4
+FE5
+FE6
+FE7
+FE8
+FE9
+FEA
+FEB
+FEC
+FED
+FEE
+FEF                 ; Nibble 15
+F0D                 ; EXRL
+FE2                 ; Ausgaenge auf 0 (R2 ist beim Aufruf immer 0, siehe cmd)
+F07                 ; RET
+
+; ---------- Befehle mit Daten in R2 (und R3) ----------
+punkt:
+141                 ; R1 = 4: Cursor 1 / Punkt
+C{cmd}
+rechteck:
+161                 ; R1 = 6: Rechteck Cursor 1 - Cursor 2
+C{cmd}
+ganz:
+131                 ; R1 = 3: ganze Matrix, R2 = 0 (nach cmd immer): nur Farbebene
+C{cmd}
+f_magenta:
+532                 ; R2 += 3   (R2 ist hier immer 0)
+f_tuerkis:
+512                 ; R2 += 1
+f_gruen:
+512
+f_gelb:
+512
+f_orange:
+512
+f_rot:
+512                 ; R2 += 1   -> magenta 8, tuerkis 5, gruen 4, gelb 3, orange 2, rot 1
+farbe:
+1E1                 ; R1 = 14: aktive Farbe
+cmd:
+FD0                 ; DIN R0     warten auf REQ
+310                 ; ANDI 1,R0
+E{cmd}              ; BRZ
+FE1                 ; DOT R1     ACK
+FE2                 ; DOT R2     Nibble 1 (x bzw. Wert)
+FE3                 ; DOT R3     Nibble 2 (y; bei Befehlen mit 1 Nibble ohne Bedeutung)
+102                 ; R2 = 0
+FE2                 ; Ausgaenge auf 0
+F07                 ; RET
+
+; ---------- Blinkbilder ----------
+blink_a:
+10B
+16D
+16F
+C{bild}
+blink_b:
+16B
+1FD
+1FF
+C{bild}
