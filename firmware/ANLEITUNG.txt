@@ -1,11 +1,6 @@
 ESP2090 STUDIO - INSTALLATION AUF EINEM NEUEN ESP32-C3 SUPERMINI
 ==================================================================
 Paket-Version 5 vom 09.11.2026 (Firmware v1.5, ohne WLAN-Zugangsdaten)
-Neu in Version 5: Firmware v1.5 (Weboberflaeche mit Matrix-Anzeige, Pruefung der
-  User-Scripts, hw.py, LED-Begrenzung, WLAN-Wiederverbinden); MicroPython 1.29.0
-  auf dem ESP erprobt
-Neu in Version 4: Einrichtungsportal ueberarbeitet (Auswahl aus Liste, Sonderzeichen, Neustart nach 5 Minuten)
-Neu in Version 3: Fehler in install_windows.bat behoben (Abbruch ohne wifi.json)
 
 
 INHALT DES PAKETS
