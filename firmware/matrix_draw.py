@@ -19,6 +19,9 @@
 #   10 k, w         Nibble k der Bitebene = w
 #   11 r            schieben: 0 links, 1 rechts, 2 hoch, 3 runter (+8 mit Umlauf)
 #   14 f            aktive Farbe
+#   13 w            Matrix sichern/wiederherstellen: Bit 0 Farbmatrix, Bit 1 Bitmatrix,
+#                   Bit 2 (+4) wiederherstellen; z. B. 1 Farben sichern, 5 Farben zurueck.
+#                   Ein Speicherplatz je Matrix; die Sicherung bleibt nach dem Zurueckholen.
 #   15 w            Anzeige: 1 umschalten, 2 an, 3 aus
 # Zeichenart aus den beiden +8-Bits (x +8 -> Bit 0, y +8 -> Bit 1):
 #   0 nur Farbebene, 1 Farbe + Bits (Farbe 0 = Bit aus), 2 nur Bits an, 3 nur Bits aus
@@ -52,7 +55,7 @@ COLOR_NAMES = {
 }
 
 # Anzahl der Datennibbles je ACK (0 = Code ohne Bedeutung)
-NIBBLES = (0, 16, 0, 1, 2, 0, 2, 2, 2, 0, 2, 1, 0, 0, 1, 1)
+NIBBLES = (0, 16, 0, 1, 2, 0, 2, 2, 2, 0, 2, 1, 0, 1, 1, 1)
 
 OFF = (0, 0, 0)
 
@@ -66,6 +69,8 @@ class Matrix:
         self.c2x = self.c2y = 0
         self.paint = 1
         self.active = True
+        self.saved_bits = None              # ACK 13: gesicherte Bitmatrix
+        self.saved_colors = None            # ACK 13: gesicherte Farbmatrix
 
     # ---------- Grundoperation ----------
     def _apply(self, i, art):
@@ -182,6 +187,22 @@ class Matrix:
         if ack == 11:
             self._shift(data[0])
             return True
+        if ack == 13:
+            w = data[0]
+            if w & 4:                       # wiederherstellen
+                neu = False
+                if w & 1 and self.saved_colors is not None:
+                    self.colors = bytearray(self.saved_colors)
+                    neu = True
+                if w & 2 and self.saved_bits is not None:
+                    self.bits = bytearray(self.saved_bits)
+                    neu = True
+                return neu
+            if w & 1:                       # sichern
+                self.saved_colors = bytearray(self.colors)
+            if w & 2:
+                self.saved_bits = bytearray(self.bits)
+            return False
         if ack == 14:
             self.paint = data[0] & 15
             return False

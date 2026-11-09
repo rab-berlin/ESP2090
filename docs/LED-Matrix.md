@@ -26,6 +26,7 @@ Wer schreibt in welche Ebene?
 |---|---|---|
 | Blockmodus (ganzes Bild) | ✓ | – |
 | Zeichenmodus | je nach Zeichenart (siehe unten) | je nach Zeichenart |
+| Zurückholen (ACK 13) | ✓ (w = 6, 7) | ✓ (w = 5, 7) |
 | Userscript `setColors(...)` | – | ✓ |
 
 ## Wie die Übertragung abläuft
@@ -87,10 +88,11 @@ Im Zeichenmodus besteht ein Befehl aus dem ACK und ein oder zwei Nibbles:
 | 8 | x, y | Cursor 2 setzen, Linie; danach Cursor 1 = Cursor 2 (Linienzug) |
 | 10 | k, w | die vier Pixel, die im Blockmodus Register k darstellt, auf w setzen |
 | 11 | r | Bit- und Farbmatrix schieben: 0 links, 1 rechts, 2 hoch, 3 runter; +8 mit Umlauf |
+| 13 | w | Farb- oder Bitmatrix sichern bzw. zurückholen (siehe unten) |
 | 14 | f | aktive Farbe 0–15 wählen (siehe Palette) |
 | 15 | w | Anzeige: 1 umschalten, 2 an, 3 aus (gezeichnet wird weiter) |
 
-ACK 2, 5, 9, 12 und 13 haben bisher keine Bedeutung und werden ignoriert. Hier kommen später weitere Zeichenbefehle dazu.
+ACK 2, 5, 9 und 12 haben bisher keine Bedeutung und werden ignoriert. Hier kommen später weitere Zeichenbefehle dazu.
 
 **Koordinaten:** x ist die Spalte (0 links bis 7 rechts), y die Zeile (0 unten bis 7 oben).
 
@@ -120,6 +122,19 @@ Bei ACK 3 ist das Nibble direkt die Zeichenart: `ACK 3, 1` füllt die ganze Matr
 | magenta | weiß | dunkelrot | dunkelgrün | dunkelblau | oliv | rosa | grau |
 
 Ein Userscript kann jede dieser Farben mit `setPalette(nummer, (r, g, b))` ändern.
+
+**Sichern und zurückholen (ACK 13):** Der ESP hat für jede Matrix einen Speicherplatz. Das Nibble w sagt, was passiert:
+
+| w | Wirkung |
+|---|---|
+| 1 | Farbmatrix sichern |
+| 2 | Bitmatrix sichern |
+| 3 | beide sichern |
+| 5 | Farbmatrix zurückholen |
+| 6 | Bitmatrix zurückholen |
+| 7 | beide zurückholen |
+
+Bit 0 steht für die Farbmatrix, Bit 1 für die Bitmatrix, +4 heißt zurückholen. Die Sicherung bleibt nach dem Zurückholen erhalten – einmal sichern, beliebig oft zurückholen. So macht es [Film2090](https://github.com/rab-berlin/Film2090): Am Start sichert er die Farben, die vorher ein Userscript gesetzt hat, und holt sie nach jeder Szene zurück.
 
 **Zeitablauf:** Das erste Nibble kommt **direkt im nächsten Schritt** nach dem ACK. Der ESP liest es 14,2 ms nach dem ACK, das zweite 9,2 ms später.
 
