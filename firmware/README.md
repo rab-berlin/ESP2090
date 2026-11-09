@@ -10,11 +10,11 @@ Die _"Firmware"_ für das ESP2090-Studio (Stand: **v1.5**, 09.11.2026) besteht a
   - [webrepl_cfg.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/webrepl_cfg.py) mit dem WebREPL-Passwort (bitte vor dem Hochladen ändern)
 - der HTML-Webseite [index.html](https://github.com/rab-berlin/ESP2090/blob/main/firmware/index.html)
 
-**Installation:** siehe [ANLEITUNG.txt](https://github.com/rab-berlin/ESP2090/blob/main/firmware/ANLEITUNG.txt) – mit Thonny oder per Skript (`install_windows.bat`, `install_mac_linux.sh`).
+**Installation:** siehe [ANLEITUNG.txt](https://github.com/rab-berlin/ESP2090/blob/main/firmware/ANLEITUNG.txt) – empfohlen und erprobt mit [Thonny](https://thonny.org), das danach wieder deinstalliert werden kann, wenn es nicht gebraucht wird. Die Skripte `install_windows.bat` und `install_mac_linux.sh` (mpremote) sind nicht getestet.
 
 Die WLAN-Zugangsdaten stehen in **wifi.json** (Vorlage: `wifi.json.beispiel`). Fehlt sie, startet der ESP im Einrichtungsmodus (WLAN „ESP32-Setup“) und fragt im Browser nach dem Netz.
 
-Außerdem gibt es auf dem ESP32 den Ordner **userscripts** für die Python-Skripte, die zur Laufzeit geladen und gestartet werden.
+**Wichtig:** Auf dem ESP32 muss der Ordner **userscripts** existieren – er enthält die Python-Skripte, die zur Laufzeit geladen und gestartet werden. Ohne ihn funktionieren Speichern, Laden und die Dateiliste in der Weboberfläche nicht. Beim Hochladen mit Thonny also den Ordner `userscripts` mit auswählen.
 
 Die Weboberfläche läuft auf Port 8080: `http://<IP-Adresse>:8080`. Links der Editor für User-Skripte, in der Mitte das Log und die Web-Taster G/H, rechts die LED-Matrix (live) mit den Knöpfen für Matrix an/aus, MIC-Upload zum 2090 und ESP-Reset.
 

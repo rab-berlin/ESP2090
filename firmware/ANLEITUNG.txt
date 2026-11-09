@@ -12,7 +12,7 @@ INHALT DES PAKETS
   Nur auf dem PC bleiben:
     README.md                -> Beschreibung der Firmware und der Funktionen fuer User-Scripts
   wifi.json.beispiel       -> Vorlage fuer die WLAN-Zugangsdaten
-  install_windows.bat      -> optional: Kopieren per Doppelklick (mpremote)
+  install_windows.bat      -> optional: Kopieren per Doppelklick (mpremote, nicht getestet)
   install_mac_linux.sh     -> optional: dasselbe fuer Mac/Linux
   ANLEITUNG.txt            -> diese Datei
 
@@ -21,14 +21,15 @@ WAS DU BRAUCHST
 ---------------
   - ESP32-C3 SuperMini und ein USB-C-Datenkabel (kein reines Ladekabel!)
   - Thonny (kostenlos): https://thonny.org
+    Damit wird installiert (empfohlen und erprobt). Danach kann Thonny
+    wieder deinstalliert werden, wenn es nicht gebraucht wird.
 
 
 SCHRITT 1: MICROPYTHON AUF DEN ESP FLASHEN (einmalig)
 -----------------------------------------------------
- MicroPython-Version: Auf dem ESP erprobt mit 1.27.0 und 1.29.0. Auf dem PC
- geprueft (Logik und Weboberflaeche, automatischer Test) mit
- denselben Versionen. Thonny installiert meist die neueste Version; tritt
- mit einer neueren Version ein Problem auf, die Version 1.29.0 waehlen.
+ MicroPython-Version: Auf dem ESP erprobt mit 1.27.0 und 1.29.0. Thonny
+ installiert meist die neueste Version; tritt mit einer neueren Version
+ ein Problem auf, die Version 1.29.0 waehlen.
 
  1. Thonny installieren und starten.
  2. Den ESP per USB anschliessen.
@@ -63,7 +64,7 @@ SCHRITT 2: WLAN-ZUGANG FESTLEGEN (empfohlen)
 
 SCHRITT 3: DATEIEN AUF DEN ESP KOPIEREN
 ---------------------------------------
-Variante A - mit Thonny (am einfachsten)
+Variante A - mit Thonny (empfohlen, erprobt)
  1. In Thonny: Menue "Ansicht" -> "Dateien" einschalten.
  2. Oben im Dateien-Bereich (Dieser Computer) in den Ordner "firmware"
     wechseln.
@@ -72,12 +73,15 @@ Variante A - mit Thonny (am einfachsten)
       index.html, webrepl_cfg.py
     (nicht: ANLEITUNG.txt, README.md, install-Skripte, wifi.json.beispiel)
     Rechtsklick -> "Hochladen nach /" (englisch: "Upload to /").
+    WICHTIG: Der Ordner "userscripts" muss mit auf den ESP! Ohne ihn
+    funktionieren Speichern, Laden und die Dateiliste in der
+    Weboberflaeche nicht.
  4. Die eigene "wifi.json" (aus Schritt 2) ebenso hochladen.
  5. Pruefen: Unten im Bereich "MicroPython-Geraet" muessen jetzt stehen:
       boot.py, hw.py, main.py, matrix_draw.py, basicweb.py, microdot.py,
       index.html, webrepl_cfg.py, wifi.json und der Ordner userscripts.
 
-Variante B - per Skript (fuer Fortgeschrittene)
+Variante B - per Skript mit mpremote (nicht getestet)
  1. Thonny schliessen (es darf nicht mit dem ESP verbunden sein).
  2. Einmalig mpremote installieren:  pip install mpremote
  3. Die eigene wifi.json neben die install-Skripte legen.
@@ -124,8 +128,11 @@ HINWEISE ZUM BETRIEB
 --------------------
  - Einschaltreihenfolge: zuerst die Erweiterung (ESP), dann den 2090.
    Beim Ausschalten umgekehrt.
- - Der Ordner "userscripts" muss auf dem ESP existieren, sonst
-   funktionieren Speichern und Dateiliste in der Weboberflaeche nicht.
+ - WICHTIG: Der Ordner "userscripts" muss auf dem ESP existieren, sonst
+   funktionieren Speichern, Laden und Dateiliste in der Weboberflaeche
+   nicht. Fehlt er, in Thonny im Bereich "MicroPython-Geraet" per
+   Rechtsklick -> neues Verzeichnis (englisch: "New directory...")
+   anlegen und "userscripts" nennen.
  - Userscripts laufen neben Webserver und Matrix. Vor dem Start prueft
    der ESP sie und startet sie nicht, wenn
      * eine while- oder for-Schleife kein "await" enthaelt
