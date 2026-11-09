@@ -1,0 +1,210 @@
+ESP2090 STUDIO - INSTALLATION AUF EINEM NEUEN ESP32-C3 SUPERMINI
+==================================================================
+Paket-Version 5 vom 09.11.2026 (Firmware v1.5, ohne WLAN-Zugangsdaten)
+Neu in Version 5: Firmware v1.5 (Weboberflaeche mit Matrix-Anzeige, Pruefung der
+  User-Scripts, hw.py, LED-Begrenzung, WLAN-Wiederverbinden); MicroPython 1.29.0
+  auf dem ESP erprobt
+Neu in Version 4: Einrichtungsportal ueberarbeitet (Auswahl aus Liste, Sonderzeichen, Neustart nach 5 Minuten)
+Neu in Version 3: Fehler in install_windows.bat behoben (Abbruch ohne wifi.json)
+Neu in Version 2: Abschnitt "Weitere Boards klonen" (Komplett-Image mit esptool)
+
+
+INHALT DES PAKETS
+-----------------
+  Alles liegt im Ordner "firmware" (im GitHub-Repo rab-berlin/ESP2090).
+  Auf den ESP kommen:
+    boot.py, hw.py, main.py, matrix_draw.py, basicweb.py, microdot.py, index.html, webrepl_cfg.py
+    userscripts/beispiel_lauflicht.py   (Beispiel, kann geloescht werden)
+  Nur auf dem PC bleiben:
+    README.md                -> Beschreibung der Firmware und der Funktionen fuer User-Scripts
+  wifi.json.beispiel       -> Vorlage fuer die WLAN-Zugangsdaten
+  install_windows.bat      -> optional: Kopieren per Doppelklick (mpremote)
+  install_mac_linux.sh     -> optional: dasselbe fuer Mac/Linux
+  ANLEITUNG.txt            -> diese Datei
+
+
+WAS DU BRAUCHST
+---------------
+  - ESP32-C3 SuperMini und ein USB-C-Datenkabel (kein reines Ladekabel!)
+  - Thonny (kostenlos): https://thonny.org
+
+
+SCHRITT 1: MICROPYTHON AUF DEN ESP FLASHEN (einmalig)
+-----------------------------------------------------
+ MicroPython-Version: Auf dem ESP erprobt mit 1.27.0 und 1.29.0. Auf dem PC
+ geprueft (Logik und Weboberflaeche, automatischer Test) mit
+ denselben Versionen. Thonny installiert meist die neueste Version; tritt
+ mit einer neueren Version ein Problem auf, die Version 1.29.0 waehlen.
+
+ 1. Thonny installieren und starten.
+ 2. Den ESP per USB anschliessen.
+    Wird er nicht erkannt: BOOT-Taste gedrueckt halten, USB einstecken,
+    BOOT loslassen. Dann ist er im Download-Modus.
+ 3. In Thonny: Menue "Werkzeuge" -> "Optionen..." -> Reiter "Interpreter"
+    (englisch: Tools -> Options -> Interpreter).
+ 4. Interpreter "MicroPython (ESP32)" waehlen.
+ 5. Unten rechts auf "MicroPython installieren oder aktualisieren (esptool)"
+    klicken (englisch: "Install or update MicroPython (esptool)").
+ 6. Im Dialog einstellen:
+      Port:     der USB-Port des ESP (z. B. COM5 bzw. /dev/ttyACM0)
+      Familie:  ESP32-C3
+      Variante: Espressif - ESP32-C3
+      Version:  die neueste angebotene
+    Dann "Installieren" klicken und warten, bis "Done" erscheint.
+ 7. Dialog schliessen, ESP kurz abstecken und wieder anstecken.
+    Im Thonny-Fenster "Kommandozeile" (Shell) erscheint jetzt ">>>".
+
+
+SCHRITT 2: WLAN-ZUGANG FESTLEGEN (empfohlen)
+--------------------------------------------
+ 1. Die Datei "wifi.json.beispiel" kopieren und die Kopie in
+    "wifi.json" umbenennen.
+ 2. Mit einem Texteditor oeffnen und WLAN-Name und Passwort eintragen:
+      {"ssid": "MeinWLAN", "password": "MeinPasswort"}
+    Die Anfuehrungszeichen muessen stehen bleiben.
+
+ Ohne wifi.json startet der ESP im Einrichtungsmodus, siehe "Ohne wifi.json"
+ weiter unten. Der Weg ueber wifi.json ist zuverlaessiger.
+
+
+SCHRITT 3: DATEIEN AUF DEN ESP KOPIEREN
+---------------------------------------
+Variante A - mit Thonny (am einfachsten)
+ 1. In Thonny: Menue "Ansicht" -> "Dateien" einschalten.
+ 2. Oben im Dateien-Bereich (Dieser Computer) in den Ordner "firmware"
+    wechseln.
+ 3. Diese Dateien UND den Ordner "userscripts" markieren:
+      boot.py, hw.py, main.py, matrix_draw.py, basicweb.py, microdot.py,
+      index.html, webrepl_cfg.py
+    (nicht: ANLEITUNG.txt, README.md, install-Skripte, wifi.json.beispiel)
+    Rechtsklick -> "Hochladen nach /" (englisch: "Upload to /").
+ 4. Die eigene "wifi.json" (aus Schritt 2) ebenso hochladen.
+ 5. Pruefen: Unten im Bereich "MicroPython-Geraet" muessen jetzt stehen:
+      boot.py, hw.py, main.py, matrix_draw.py, basicweb.py, microdot.py,
+      index.html, webrepl_cfg.py, wifi.json und der Ordner userscripts.
+
+Variante B - per Skript (fuer Fortgeschrittene)
+ 1. Thonny schliessen (es darf nicht mit dem ESP verbunden sein).
+ 2. Einmalig mpremote installieren:  pip install mpremote
+ 3. Die eigene wifi.json neben die install-Skripte legen.
+ 4. install_windows.bat doppelklicken
+    bzw. unter Mac/Linux:  sh install_mac_linux.sh
+
+
+SCHRITT 4: STARTEN UND AUFRUFEN
+-------------------------------
+ 1. Am ESP die RST-Taste druecken oder USB kurz abziehen.
+ 2. In der Thonny-Shell erscheint nach einigen Sekunden z. B.:
+      Connected: ('192.168.178.42', '255.255.255.0', ...)
+    Die erste Zahl ist die IP-Adresse. Alternativ im Router nachsehen.
+ 3. Im Browser oeffnen:   http://<IP-Adresse>:8080
+    Beispiel:             http://192.168.178.42:8080
+    (Wichtig: ":8080" am Ende nicht vergessen.)
+
+
+OHNE WIFI.JSON: EINRICHTUNGSMODUS
+---------------------------------
+ 1. Der ESP oeffnet ein eigenes WLAN "ESP32-Setup", Passwort: 12345678
+ 2. Mit dem Handy oder PC verbinden und http://192.168.4.1 aufrufen.
+ 3. WLAN aus der Liste waehlen ODER den Namen im Feld "or enter manually"
+    eintippen (z. B. fuer versteckte Netze). Ein eingetippter Name hat
+    Vorrang vor der Liste. Passwort eingeben (Sonderzeichen und Umlaute
+    sind erlaubt) und absenden.
+ 4. Nach "Saved! Restarting..." verbindet sich der ESP mit dem WLAN.
+
+ Gibt es schon eine wifi.json, ist das WLAN beim Start aber nicht
+ erreichbar (z. B. Router nach Stromausfall noch nicht bereit), oeffnet
+ der ESP ebenfalls das Einrichtungsportal. Ohne Eingabe startet er nach
+ 5 Minuten neu und versucht es erneut.
+
+
+WEBREPL (OPTIONAL)
+------------------
+ WebREPL ist aktiv. Das Passwort steht in webrepl_cfg.py ("ichbins").
+ Bitte VOR dem Hochladen aendern (4 bis 9 Zeichen) - das Standard-
+ Passwort ist oeffentlich bekannt.
+ Zugang ueber https://micropython.org/webrepl  ->  ws://<IP-Adresse>:8266
+
+
+HINWEISE ZUM BETRIEB
+--------------------
+ - Einschaltreihenfolge: zuerst die Erweiterung (ESP), dann den 2090.
+   Beim Ausschalten umgekehrt.
+ - Der Ordner "userscripts" muss auf dem ESP existieren, sonst
+   funktionieren Speichern und Dateiliste in der Weboberflaeche nicht.
+ - Userscripts laufen neben Webserver und Matrix. Vor dem Start prueft
+   der ESP sie und startet sie nicht, wenn
+     * eine while- oder for-Schleife kein "await" enthaelt
+       (Ausnahme: for ... in range(n) mit fester Zahl bis 64),
+     * time.sleep / sleep_ms / sleep_us oder input() vorkommt.
+   Pausen in Schleifen: await asyncio.sleep_ms(20). Beim Speichern
+   erscheint bereits eine Warnung (orange), gespeichert wird trotzdem.
+ - Logs gibt es nur in der Weboberflaeche, nicht mehr als Datei.
+   Ein alter Ordner "logs" auf dem ESP kann geloescht werden.
+
+
+WEITERE BOARDS KLONEN: KOMPLETT-IMAGE MIT ESPTOOL
+------------------------------------------------
+Ist ein ESP fertig eingerichtet, kann man seinen kompletten Flash
+(Bootloader, MicroPython, alle Dateien) in eine Datei lesen und damit
+weitere Boards in einem Schritt flashen.
+
+ 1. esptool installieren (einmalig):
+      pip install esptool
+    Pruefen:  esptool version
+    Hinweis: Ab esptool 5 heissen die Befehle read-flash, write-flash,
+    erase-flash, flash-id (mit Bindestrich). Aeltere Versionen:
+    esptool.py read_flash usw. (mit Unterstrich).
+
+ 2. Port herausfinden (Thonny muss GESCHLOSSEN sein):
+      Windows: Geraete-Manager -> "Anschluesse (COM & LPT)" -> z. B. COM5
+      Mac:     ls /dev/cu.usbmodem*
+      Linux:   meist /dev/ttyACM0
+    In den Befehlen unten COM5 durch den eigenen Port ersetzen.
+
+ 3. Master-ESP vorbereiten (WICHTIG). Mit Thonny auf dem ESP loeschen:
+      - wifi.json   (sonst stecken die WLAN-Zugangsdaten im Image!)
+      - Ordner logs und busch_upload.mic, falls noch von alten
+        Firmware-Staenden vorhanden (werden nicht mehr angelegt)
+    Alles andere (auch die Userscripts) kommt mit ins Image.
+
+ 4. Flash-Groesse pruefen:
+      esptool --port COM5 flash-id
+    Ausgabe z. B. "Detected flash size: 4MB" (beim SuperMini normal).
+
+ 5. Image auslesen (4 MB = 0x400000, dauert ca. 1 Minute):
+      esptool --chip esp32c3 --port COM5 read-flash 0 0x400000 esp2090_image.bin
+
+ 6. Image auf einen neuen ESP schreiben:
+      esptool --chip esp32c3 --port COM5 erase-flash
+      esptool --chip esp32c3 --port COM5 write-flash 0x0 esp2090_image.bin
+    Danach RST druecken oder USB kurz abziehen. Anschliessend die
+    eigene wifi.json hochladen (oder den Einrichtungsmodus nutzen).
+
+ Gut zu wissen:
+  - Erkennt esptool den ESP nicht: BOOT-Taste halten, USB einstecken,
+    BOOT loslassen, Befehl wiederholen.
+  - Jedes Board behaelt seine eigene MAC-Adresse (steht im Chip,
+    nicht im Flash).
+  - Das Image passt nur zu gleicher Hardware (ESP32-C3, 4 MB Flash).
+  - Kontrolle: Ein frisch geklonter ESP ohne wifi.json muss im
+    Einrichtungsmodus starten (WLAN "ESP32-Setup"). Verbindet er sich
+    direkt mit dem eigenen WLAN, steckten doch Zugangsdaten im Image.
+  - Ohne Kommandozeile: Im Chrome- oder Edge-Browser das Web-Tool
+    https://espressif.github.io/esptool-js oeffnen, "Connect",
+    Adresse 0x0 eintragen, Datei esp2090_image.bin waehlen, "Program".
+
+
+FEHLERSUCHE
+-----------
+ - Thonny findet den ESP nicht:
+     anderes USB-Kabel probieren (viele Kabel koennen nur laden),
+     BOOT-Taste beim Einstecken halten (siehe Schritt 1).
+ - Thonny meldet "Device is busy" oder reagiert nicht:
+     In Thonny auf "Stop/Neustart" (rotes Stoppschild) klicken.
+     Das unterbricht das laufende Programm auf dem ESP.
+ - Webseite nicht erreichbar:
+     Port 8080 in der Adresse? PC im selben WLAN wie der ESP?
+ - Falsche WLAN-Daten eingegeben:
+     In Thonny die Datei wifi.json auf dem ESP loeschen oder
+     korrigieren und den ESP neu starten.

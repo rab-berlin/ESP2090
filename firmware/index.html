@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP2090-Studio</title>
 <style>
+textarea, pre {
+    box-sizing: border-box;
+}
 body {
     font-family: Arial, sans-serif;
     background: #222;
@@ -62,24 +67,64 @@ button {
     cursor: not-allowed;
     box-shadow: 0 5px 0 #550000;
 }
-#buschstatus {
+#status {
     color: #ff0;
     font-weight: bold;
 }
+#status {
+    margin-top:12px;
+}
+#status.error {
+    color: #f66;
+}
+#status.warn {
+    color: #fa0;
+}
 .flex-row {
     display:flex;
+    flex-wrap:wrap;
     gap:20px;
     align-items:flex-start;
 }
+#editor-container {
+    flex:1;
+    min-width:400px;
+    display:flex;
+    flex-direction:column;
+}
+/* Datei-Zeile: Eingabefeld passt sich an, Buttons brechen nicht um */
+#file-row {
+    display:flex;
+    flex-wrap:nowrap;
+    align-items:center;
+    gap:6px;
+    margin-top:5px;
+}
+#file-row input#fname {
+    flex:1 1 auto;
+    min-width:90px;
+}
+#file-row button {
+    flex:0 0 auto;
+    margin:0;
+    padding:10px 14px;
+}
+/* Log: ca. 60 Zeichen breit, laengere Meldungen (max. 100) werden umgebrochen */
 #live-container {
+    flex:0 0 auto;
     display:flex;
     flex-direction:column;
     justify-content:flex-start;
 }
+#log {
+    width:calc(60ch + 12px);
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+}
 #live-buttons {
     margin-top:10px;
     display:flex;
-    justify-content:flex-end;
+    justify-content:center;
     gap:10px;
 }
 input#fname {
@@ -91,17 +136,109 @@ input#fname {
     border-radius:4px;
 }
 
-/* NEU */
-.bottom-row {
-    display:flex;
-    gap:20px;
-    margin-top:15px;
-}
-
-.controls-box {
+/* LED-Matrix (rechte Spalte), darunter LED Start/Stop mit Zustand */
+#matrix-container {
+    flex:0 0 auto;
     display:flex;
     flex-direction:column;
 }
+/* Controls unter der Matrix: einheitliche Buttons */
+#controls {
+    margin-top:12px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+#controls h3 {
+    margin:4px 0 0 0;
+}
+.ctl-row {
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+button.ctl {
+    width:120px;
+    height:42px;
+    margin:0;
+    padding:0 10px;
+    flex:0 0 auto;
+}
+/* Zustand der Matrix rechts neben dem LED-Button */
+#ledState {
+    margin-left:auto;
+    margin-right:6px;       /* Platz fuer den Leuchtschein */
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:bold;
+}
+#ledState .dot {
+    width:16px;
+    height:16px;
+    border-radius:50%;
+}
+#ledState.on {
+    color:#3c3;
+}
+#ledState.on .dot {
+    background:#3c3;
+    box-shadow:0 0 8px 2px #3c3;
+}
+#ledState.off {
+    color:#e44;
+}
+#ledState.off .dot {
+    background:#e44;
+    box-shadow:0 0 6px 1px #e44;
+}
+/* Dateiauswahl als Feld neben "Upload" (echtes Eingabefeld versteckt) */
+#buschfile {
+    display:none;
+}
+#buschpick {
+    flex:1;
+    min-width:0;
+    height:42px;
+    box-sizing:border-box;
+    padding:0 8px;
+    display:flex;
+    align-items:center;
+    background:#111;
+    color:#0f0;
+    border:1px solid #555;
+    border-radius:4px;
+    cursor:pointer;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+#buschpick.empty {
+    color:#888;
+}
+#matrix-container {
+    width:292px;
+}
+#matrix {
+    display:grid;
+    grid-template-columns:repeat(8, 28px);
+    grid-auto-rows:28px;
+    gap:6px;
+    padding:12px;
+    background:#000;
+    border:1px solid #555;
+    border-radius:8px;
+}
+.led {
+    border-radius:50%;
+    background:#1c1c1c;
+    box-shadow:inset 0 0 4px #000;
+}
+.led.on {
+    box-shadow:0 0 8px 1px var(--c), inset 0 0 6px rgba(255,255,255,0.35);
+    background:radial-gradient(circle at 50% 45%, #fff 0%, var(--c) 45%, var(--c) 100%);
+}
+
 </style>
 </head>
 <body>
@@ -110,53 +247,51 @@ input#fname {
 
 <div class="flex-row">
     <!-- Editor Column -->
-    <div style="flex:1; display:flex; flex-direction:column;">
+    <div id="editor-container">
         <textarea id="code"></textarea>
 
-        <div>
-            <label>Filename:
-                <input id="fname" list="fname_list" type="text">
-                <datalist id="fname_list"></datalist>
-            </label>
+        <div id="file-row">
+            <input id="fname" list="fname_list" type="text" size="1"
+                   placeholder="filename.py" aria-label="Filename">
+            <datalist id="fname_list"></datalist>
 
             <button onclick="save()">Save</button>
             <button onclick="load()">Load</button>
             <button onclick="run()">Run</button>
             <button onclick="stop()">Stop</button>
         </div>
+        <div id="status"></div>
     </div>
 
     <!-- Live Console Column -->
-    <div id="live-container" style="flex:1;">
+    <div id="live-container">
         <pre id="log"></pre>
         <div id="live-buttons">
-            <button id="btnG">Taste G</button>
-            <button id="btnH">Taste H</button>
-        </div>
-    </div>
-</div>
-
-<!-- UNTERER BEREICH -->
-<div class="bottom-row">
-
-    <!-- Busch Upload -->
-    <div style="flex:1;">
-        <h3>Microtronic Upload</h3>
-        <input type="file" id="buschfile">
-        <button onclick="buschUpload()">Upload to 2090</button>
-        <div id="buschstatus"></div>
-    </div>
-
-    <!-- Controls -->
-    <div class="controls-box" style="flex:1;">
-        <h3>Controls</h3>
-        <div>
-            <button onclick="resetESP()">ESP Reset</button>
-            <button onclick="matrixStart()">LED Start</button>
-            <button onclick="matrixStop()">LED Stop</button>
+            <button id="btnG">Key G</button>
+            <button id="btnH">Key H</button>
         </div>
     </div>
 
+    <!-- LED Matrix Column -->
+    <div id="matrix-container">
+        <div id="matrix"></div>
+        <div id="controls">
+            <h3>Controls</h3>
+            <div class="ctl-row" id="ledRow">
+                <button id="btnLed" class="ctl" onclick="matrixToggle()">LED on</button>
+                <span id="ledState" class="off" title="LED matrix inactive"><span class="dot"></span></span>
+            </div>
+            <div class="ctl-row">
+                <button class="ctl" onclick="buschUpload()">Upload</button>
+                <input type="file" id="buschfile" accept=".mic,.txt">
+                <div id="buschpick" class="empty" title="Choose a .mic file"
+                     onclick="document.getElementById('buschfile').click()">choose .mic file…</div>
+            </div>
+            <div class="ctl-row">
+                <button class="ctl" onclick="resetESP()">ESP Reset</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -164,7 +299,7 @@ const codeBox = document.getElementById("code");
 const inputFilename = document.getElementById("fname");
 const datalistFilename = document.getElementById("fname_list");
 const consoleLog = document.getElementById("log");
-const buschStatus = document.getElementById("buschstatus");
+const statusBox = document.getElementById("status");
 const btnG = document.getElementById("btnG");
 const btnH = document.getElementById("btnH");
 
@@ -191,57 +326,212 @@ async function loadFileList() {
 }
 window.addEventListener("load", loadFileList);
 
+// Statuszeile: Antwort des ESP anzeigen
+function showStatus(box, text, isError){
+    box.innerText = text;
+    box.className = isError ? "error" : (text.indexOf("warning:") >= 0 ? "warn" : "");
+}
+
+// Anfrage senden, Antworttext in der Statuszeile anzeigen
+async function request(url, options){
+    try {
+        let r = await fetch(url, options);
+        let t = await r.text();
+        showStatus(statusBox, r.ok ? t : "Error " + r.status + ": " + t, !r.ok);
+        return r.ok ? t : null;
+    } catch(e) {
+        showStatus(statusBox, "Error: no connection to ESP (" + e + ")", true);
+        return null;
+    }
+}
+
+// Dateiname aus dem Eingabefeld: ".py" ergaenzen, URL-kodiert
+function scriptParam(){
+    let name = inputFilename.value.trim();
+    if (!name){ showStatus(statusBox, "Please enter a filename.", true); return null; }
+    if (!name.endsWith(".py")) name += ".py";
+    inputFilename.value = name;
+    return "name=" + encodeURIComponent("userscripts/" + name);
+}
+
 // Save / Load / Run / Stop
 async function save(){
-    let filename = "userscripts/" + inputFilename.value;
-    await fetch("/save?name="+filename,{method:"POST",body:codeBox.value});
+    let p = scriptParam(); if (!p) return;
+    await request("/save?" + p, {method:"POST", body:codeBox.value});
     await loadFileList();
 }
 
 async function load(){
-    let filename = "userscripts/" + inputFilename.value;
-    let r = await fetch("/load?name="+filename);
-    codeBox.value = await r.text();
+    let p = scriptParam(); if (!p) return;
+    let t = await request("/load?" + p);
+    if (t !== null){
+        codeBox.value = t;
+        showStatus(statusBox, "Loaded " + inputFilename.value, false);
+    }
 }
 
 async function run(){
-    let filename = "userscripts/" + inputFilename.value;
-    await fetch("/run?name="+filename);
+    let p = scriptParam(); if (!p) return;
+    await request("/run?" + p);
 }
 
-async function stop(){ await fetch("/stop"); }
+async function stop(){ await request("/stop"); }
 
-// Logs
-async function logs(){
- let r = await fetch("/logs");
- consoleLog.innerText=await r.text();
- consoleLog.scrollTop=consoleLog.scrollHeight;
+// LED-Matrix: 64 Kreise, oberste Zeile zuerst
+const STATUS_INTERVAL_MS = 200;
+const btnLed = document.getElementById("btnLed");
+let matrixOn = false;
+
+// LED-Toggle: Beschriftung = was ein Klick tut; Zustand rechts daneben
+// (gruener Punkt = Matrix aktiv, roter Punkt = inaktiv; Text nur als Tooltip)
+const ledState = document.getElementById("ledState");
+function showMatrixState(on){
+    matrixOn = on;
+    btnLed.textContent = on ? "LED off" : "LED on";
+    ledState.className = on ? "on" : "off";
+    ledState.title = on ? "LED matrix active" : "LED matrix inactive";
 }
-setInterval(logs,500);
+
+// Dateiauswahl: Name im Feld neben "Upload" anzeigen
+const buschFile = document.getElementById("buschfile");
+const buschPick = document.getElementById("buschpick");
+buschFile.addEventListener("change", ()=>{
+    let f = buschFile.files[0];
+    buschPick.textContent = f ? f.name : "choose .mic file…";
+    buschPick.classList.toggle("empty", !f);
+});
+const matrixGrid = document.getElementById("matrix");
+const leds = [];
+for (let i = 0; i < 64; i++){
+    let d = document.createElement("div");
+    d.className = "led";
+    matrixGrid.appendChild(d);
+    leds.push(d);
+}
+
+// px: 64 x "rrggbb". Die echten Werte sind sehr dunkel (um 10 von 255), deshalb
+// wird das Bild so aufgehellt, dass der hellste Kanal 255 ist; Verhaeltnisse bleiben.
+function drawMatrix(px){
+    let vals = [], maxv = 0;
+    for (let i = 0; i < 64; i++){
+        let r = parseInt(px.substr(i*6, 2), 16);
+        let g = parseInt(px.substr(i*6+2, 2), 16);
+        let b = parseInt(px.substr(i*6+4, 2), 16);
+        vals.push([r, g, b]);
+        maxv = Math.max(maxv, r, g, b);
+    }
+    let k = maxv ? 255 / maxv : 0;
+    for (let i = 0; i < 64; i++){
+        let [r, g, b] = vals[i];
+        if (r + g + b === 0){
+            leds[i].className = "led";
+        } else {
+            leds[i].className = "led on";
+            leds[i].style.setProperty("--c",
+                "rgb(" + Math.round(r*k) + "," + Math.round(g*k) + "," + Math.round(b*k) + ")");
+        }
+    }
+}
+
+// Eine Abfrage fuer Log, Script-Status und Matrix. Die naechste startet erst,
+// wenn die vorige beantwortet ist (kein Stau, z. B. waehrend des MIC-Uploads).
+let logVersion = -1, matrixVersion = -1;
+
+async function pollStatus(){
+    let started = Date.now();
+    try {
+        let r = await fetch("/status?lv=" + logVersion + "&mv=" + matrixVersion);
+        let s = await r.json();
+
+        if (s.log !== undefined){
+            consoleLog.innerText = s.log;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+        logVersion = s.lv;
+
+        scriptRunning = s.running === 1;
+        btnG.disabled = !scriptRunning;
+        btnH.disabled = !scriptRunning;
+
+        showMatrixState(s.matrix === 1);
+        if (s.px !== undefined) drawMatrix(s.px);
+        matrixVersion = s.mv;
+    } catch(e) {
+        // ESP nicht erreichbar: einfach weiter versuchen
+    }
+    // Intervall ab Start der Anfrage: war die Antwort langsam (Matrix laeuft),
+    // geht die naechste sofort los; sonst hoechstens alle STATUS_INTERVAL_MS.
+    setTimeout(pollStatus, Math.max(0, STATUS_INTERVAL_MS - (Date.now() - started)));
+}
+pollStatus();
 
 // Busch Upload
+// Befehle aus einer .mic-Datei holen, mit denselben Regeln wie mic_instructions() in main.py:
+// erste 3 Zeichen jeder Zeile, I/L -> 1, O/Q -> 0, nur gueltige Hex-Befehle.
+// Kommentare und Leerzeilen fallen weg; so bleibt die Anfrage klein (Microdot: max. 16 KB).
+const MIC_MAX_STEPS = 256;
+
+function micInstructions(text){
+ const out = [];
+ const lines = text.replace(/^﻿/, "").split(/\r\n|\r|\n/);
+ for (const raw of lines){
+  const line = raw.trim().toUpperCase();
+  if (line.length < 3) continue;
+  const instr = line.slice(0, 3)
+   .replace(/I/g, "1").replace(/L/g, "1")
+   .replace(/O/g, "0").replace(/Q/g, "0");
+  if (/^[0-9A-F]{3}$/.test(instr)) out.push(instr);
+ }
+ return out;
+}
+
 async function buschUpload(){
- let file=document.getElementById("buschfile").files[0];
- if(!file){ alert("No file"); return; }
+ let file=buschFile.files[0];
+ if(!file){ showStatus(statusBox, "No file selected.", true); return; }
+
+ let instr = micInstructions(await file.text());
+ if (instr.length === 0){
+  showStatus(statusBox, "No valid instructions found in the file.", true);
+  return;
+ }
+ if (instr.length > MIC_MAX_STEPS){
+  showStatus(statusBox, instr.length + " instructions – the 2090 has only " + MIC_MAX_STEPS + " program steps.", true);
+  return;
+ }
+
  let fd=new FormData();
- fd.append("file",file);
- buschStatus.innerText="Transferring...";
- let r=await fetch("/busch_upload",{method:"POST",body:fd});
- buschStatus.innerText=await r.text();
+ fd.append("file", new Blob([instr.join("\n") + "\n"], {type: "text/plain"}), file.name);
+ showStatus(statusBox, "Transferring " + instr.length + " instructions (approx. " + Math.ceil(instr.length * 0.13) + " s) ...", false);
+ try {
+  let r=await fetch("/busch_upload",{method:"POST",body:fd});
+  let t=await r.text();
+  showStatus(statusBox, r.ok ? t : "Error " + r.status + ": " + t, !r.ok);
+ } catch(e) {
+  showStatus(statusBox, "Error: no connection to ESP (" + e + ")", true);
+ }
 }
 
 // Controls
 async function resetESP(){
-    await fetch("/reset");
+    if (!confirm("Restart the ESP?")) return;
+    try {
+        let r = await fetch("/reset", {method:"POST"});
+        showStatus(statusBox, await r.text(), !r.ok);
+    } catch(e) {
+        showStatus(statusBox, "Error: no connection to ESP (" + e + ")", true);
+    }
 }
 
-async function matrixStart(){
-    await fetch("/matrix_control?action=start");
+// LED Start/Stop: keine Meldung in der Statuszeile, der Zustand steht an den Buttons
+async function matrixControl(action){
+    try {
+        let r = await fetch("/matrix_control?action=" + action);
+        if (r.ok) showMatrixState(action === "start");
+    } catch(e) {
+        showStatus(statusBox, "Error: no connection to ESP (" + e + ")", true);
+    }
 }
-
-async function matrixStop(){
-    await fetch("/matrix_control?action=stop");
-}
+function matrixToggle(){ matrixControl(matrixOn ? "stop" : "start"); }
 
 // Web-Taster
 function triggerTaster(type){
@@ -262,20 +552,14 @@ function triggerTaster(type){
 btnG.addEventListener("pointerdown", ()=>triggerTaster("G"));
 btnH.addEventListener("pointerdown", ()=>triggerTaster("H"));
 
+// Leertaste = G, H = H; nicht beim Tippen im Editor oder in Eingabefeldern
 document.addEventListener("keydown",(e)=>{
     if(!scriptRunning) return;
+    if(e.target.closest("textarea, input, select")) return;
     if(e.code==="Space"){ e.preventDefault(); triggerTaster("G"); }
     if(e.code==="KeyH"){ e.preventDefault(); triggerTaster("H"); }
 });
 
-// Script running check
-async function updateScriptState(){
-    let r = await fetch("/is_script_running");
-    scriptRunning = (await r.text())==="1";
-    btnG.disabled = !scriptRunning;
-    btnH.disabled = !scriptRunning;
-}
-setInterval(updateScriptState,1000);
 </script>
 
 </body>

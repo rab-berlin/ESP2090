@@ -1,0 +1,12 @@
+# WLAN-Zugangsdaten nie einchecken
+wifi.json
+**/wifi.json
+
+# Flash-Images (koennen Zugangsdaten enthalten)
+*.bin
+
+# Python / Editor
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

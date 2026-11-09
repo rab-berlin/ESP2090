@@ -1,4 +1,3 @@
-from machine import Pin
 import network
 import time
 import json
@@ -7,22 +6,13 @@ import webrepl
 CONFIG_FILE = "wifi.json"
 
 # ================= GPIO =================
-out_1 = Pin(20, Pin.OUT)
-out_2 = Pin(21, Pin.OUT)
-out_3 = Pin(4, Pin.OUT)
-out_4 = Pin(3, Pin.OUT)
-
-in_1 = Pin(5, Pin.IN, Pin.PULL_DOWN)
-in_2 = Pin(6, Pin.IN, Pin.PULL_DOWN)
-in_3 = Pin(7, Pin.IN, Pin.PULL_DOWN)
-in_4 = Pin(8, Pin.IN, Pin.PULL_DOWN)
-
+from hw import OUTPUTS     # Pinbelegung in hw.py
 
 def load_config():
     try:
         with open(CONFIG_FILE, "r") as f:
             return json.load(f)
-    except:
+    except (OSError, ValueError):   # fehlt oder kein gueltiges JSON
         return None
 
 def connect_wifi():
@@ -52,6 +42,10 @@ def start_ap():
 
 
 # MAIN
+
+for out in OUTPUTS:
+    out.value(0)
+
 if connect_wifi():
     webrepl.start()
     print("WebREPL WLAN active")
@@ -63,5 +57,7 @@ else:
     print("WebREPL AP active")
 
     # HIER bewusst blocking!
+    # Gibt es schon eine wifi.json (WLAN nur gerade nicht erreichbar, z. B. nach
+    # Stromausfall), startet das Portal nach PORTAL_TIMEOUT_S neu und versucht es erneut.
     import basicweb
-    basicweb.start()
+    basicweb.start(timeout_s=basicweb.PORTAL_TIMEOUT_S if load_config() else None)
