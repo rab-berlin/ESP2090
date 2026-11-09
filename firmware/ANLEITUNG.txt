@@ -131,7 +131,7 @@ HINWEISE ZUM BETRIEB
  - WICHTIG: Der Ordner "userscripts" muss auf dem ESP existieren, sonst
    funktionieren Speichern, Laden und Dateiliste in der Weboberflaeche
    nicht. Fehlt er, in Thonny im Bereich "MicroPython-Geraet" per
-   Rechtsklick -> neues Verzeichnis (englisch: "New directory...")
+   Rechtsklick -> "Neuer Ordner..." (englisch: "New directory...")
    anlegen und "userscripts" nennen.
  - Userscripts laufen neben Webserver und Matrix. Vor dem Start prueft
    der ESP sie und startet sie nicht, wenn
