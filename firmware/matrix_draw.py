@@ -18,10 +18,11 @@
 #   8  x, y         Cursor 2 / Linie, danach Cursor 1 = Cursor 2
 #   10 k, w         Nibble k der Bitebene = w
 #   11 r            schieben: 0 links, 1 rechts, 2 hoch, 3 runter (+8 mit Umlauf)
+#   13 w            Stapel: Bit 0 Farbmatrix, Bit 1 Bitmatrix; Bit 2-3 Aktion:
+#                   +0 push, +4 pop, +8 peek (zurueckholen, bleibt auf dem Stapel),
+#                   +12 Stapel leeren. Je Matrix ein Stapel mit STACK_MAX Plaetzen,
+#                   bei vollem Stapel faellt beim Push die aelteste Sicherung heraus.
 #   14 f            aktive Farbe
-#   13 w            Matrix sichern/wiederherstellen: Bit 0 Farbmatrix, Bit 1 Bitmatrix,
-#                   Bit 2 (+4) wiederherstellen; z. B. 1 Farben sichern, 5 Farben zurueck.
-#                   Ein Speicherplatz je Matrix; die Sicherung bleibt nach dem Zurueckholen.
 #   15 w            Anzeige: 1 umschalten, 2 an, 3 aus
 # Zeichenart aus den beiden +8-Bits (x +8 -> Bit 0, y +8 -> Bit 1):
 #   0 nur Farbebene, 1 Farbe + Bits (Farbe 0 = Bit aus), 2 nur Bits an, 3 nur Bits aus
@@ -59,6 +60,8 @@ NIBBLES = (0, 16, 0, 1, 2, 0, 2, 2, 2, 0, 2, 1, 0, 1, 1, 1)
 
 OFF = (0, 0, 0)
 
+STACK_MAX = 8                       # Plaetze je Stapel (ACK 13)
+
 
 class Matrix:
     def __init__(self):
@@ -69,8 +72,8 @@ class Matrix:
         self.c2x = self.c2y = 0
         self.paint = 1
         self.active = True
-        self.saved_bits = None              # ACK 13: gesicherte Bitmatrix
-        self.saved_colors = None            # ACK 13: gesicherte Farbmatrix
+        self.stack_bits = []                # ACK 13: Stapel der Bitmatrix
+        self.stack_colors = []              # ACK 13: Stapel der Farbmatrix
 
     # ---------- Grundoperation ----------
     def _apply(self, i, art):
@@ -188,21 +191,7 @@ class Matrix:
             self._shift(data[0])
             return True
         if ack == 13:
-            w = data[0]
-            if w & 4:                       # wiederherstellen
-                neu = False
-                if w & 1 and self.saved_colors is not None:
-                    self.colors = bytearray(self.saved_colors)
-                    neu = True
-                if w & 2 and self.saved_bits is not None:
-                    self.bits = bytearray(self.saved_bits)
-                    neu = True
-                return neu
-            if w & 1:                       # sichern
-                self.saved_colors = bytearray(self.colors)
-            if w & 2:
-                self.saved_bits = bytearray(self.bits)
-            return False
+            return self._stack(data[0])
         if ack == 14:
             self.paint = data[0] & 15
             return False
@@ -218,6 +207,29 @@ class Matrix:
                 return False
             return True
         return False
+
+    def _stack(self, w):
+        """ACK 13: push (+0), pop (+4), peek (+8), leeren (+12) fuer Farbmatrix (1) und/oder Bitmatrix (2)."""
+        aktion = w >> 2
+        neu = False
+        for bit in (1, 2):
+            if not w & bit:
+                continue
+            stapel = self.stack_colors if bit == 1 else self.stack_bits
+            if aktion == 0:
+                if len(stapel) >= STACK_MAX:
+                    stapel.pop(0)
+                stapel.append(bytearray(self.colors if bit == 1 else self.bits))
+            elif aktion == 3:
+                del stapel[:]
+            elif stapel:
+                oben = stapel.pop() if aktion == 1 else stapel[-1]
+                if bit == 1:
+                    self.colors = bytearray(oben)
+                else:
+                    self.bits = bytearray(oben)
+                neu = True
+        return neu
 
     # ---------- Anzeige ----------
     def render(self, np):

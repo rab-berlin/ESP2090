@@ -26,7 +26,7 @@ Wer schreibt in welche Ebene?
 |---|---|---|
 | Blockmodus (ganzes Bild) | ✓ | – |
 | Zeichenmodus | je nach Zeichenart (siehe unten) | je nach Zeichenart |
-| Zurückholen (ACK 13) | ✓ (w = 6, 7) | ✓ (w = 5, 7) |
+| pop/peek (ACK 13) | ✓ (w = 6, 7, 10, 11) | ✓ (w = 5, 7, 9, 11) |
 | Userscript `setColors(...)` | – | ✓ |
 
 ## Wie die Übertragung abläuft
@@ -88,7 +88,7 @@ Im Zeichenmodus besteht ein Befehl aus dem ACK und ein oder zwei Nibbles:
 | 8 | x, y | Cursor 2 setzen, Linie; danach Cursor 1 = Cursor 2 (Linienzug) |
 | 10 | k, w | die vier Pixel, die im Blockmodus Register k darstellt, auf w setzen |
 | 11 | r | Bit- und Farbmatrix schieben: 0 links, 1 rechts, 2 hoch, 3 runter; +8 mit Umlauf |
-| 13 | w | Farb- oder Bitmatrix sichern bzw. zurückholen (siehe unten) |
+| 13 | w | Stapel für Farb- und Bitmatrix: push, pop, peek, leeren (siehe unten) |
 | 14 | f | aktive Farbe 0–15 wählen (siehe Palette) |
 | 15 | w | Anzeige: 1 umschalten, 2 an, 3 aus (gezeichnet wird weiter) |
 
@@ -123,18 +123,16 @@ Bei ACK 3 ist das Nibble direkt die Zeichenart: `ACK 3, 1` füllt die ganze Matr
 
 Ein Userscript kann jede dieser Farben mit `setPalette(nummer, (r, g, b))` ändern.
 
-**Sichern und zurückholen (ACK 13):** Der ESP hat für jede Matrix einen Speicherplatz. Das Nibble w sagt, was passiert:
+**Stapel (ACK 13):** Der ESP hat für die Farbmatrix und für die Bitmatrix je einen Stapel mit 8 Plätzen. Das Nibble w sagt, was passiert:
 
 | w | Wirkung |
 |---|---|
-| 1 | Farbmatrix sichern |
-| 2 | Bitmatrix sichern |
-| 3 | beide sichern |
-| 5 | Farbmatrix zurückholen |
-| 6 | Bitmatrix zurückholen |
-| 7 | beide zurückholen |
+| 1 / 2 / 3 | **push**: Farbmatrix / Bitmatrix / beide auf den Stapel legen |
+| 5 / 6 / 7 | **pop**: oberste Sicherung zurückholen und vom Stapel nehmen |
+| 9 / 10 / 11 | **peek**: oberste Sicherung zurückholen, sie bleibt auf dem Stapel |
+| 13 / 14 / 15 | Stapel leeren |
 
-Bit 0 steht für die Farbmatrix, Bit 1 für die Bitmatrix, +4 heißt zurückholen. Die Sicherung bleibt nach dem Zurückholen erhalten – einmal sichern, beliebig oft zurückholen. So macht es [Film2090](https://github.com/rab-berlin/Film2090): Am Start sichert er die Farben, die vorher ein Userscript gesetzt hat, und holt sie nach jeder Szene zurück.
+Bit 0 steht für die Farbmatrix, Bit 1 für die Bitmatrix, die oberen beiden Bits für die Aktion (+0 push, +4 pop, +8 peek, +12 leeren). Ist ein Stapel voll, fällt beim nächsten push die älteste Sicherung heraus; pop und peek auf einen leeren Stapel ändern nichts. [Film2090](https://github.com/rab-berlin/Film2090) legt am Start die Farben, die vorher ein Userscript gesetzt hat, auf den Stapel und holt sie nach jeder Szene mit peek zurück.
 
 **Zeitablauf:** Das erste Nibble kommt **direkt im nächsten Schritt** nach dem ACK. Der ESP liest es 14,2 ms nach dem ACK, das zweite 9,2 ms später.
 
