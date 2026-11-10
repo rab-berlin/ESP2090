@@ -385,7 +385,14 @@ async function run(){
 async function stop(){ await request("/stop"); }
 
 // LED-Matrix: 64 Kreise, oberste Zeile zuerst
-const STATUS_INTERVAL_MS = 200;
+// Testschalter ueber die Adresse, z. B. http://esp/?poll=1000&px=0&con=0
+//   poll: Abstand der Status-Abfragen in ms (Vorgabe 200)
+//   px=0: kein Matrixbild in der Antwort (spart Rechenzeit auf dem ESP)
+//   con=1/0: Matrixbild auf der seriellen Konsole an/aus (Vorgabe aus, bremst)
+const PAGE_ARGS = new URLSearchParams(location.search);
+const STATUS_INTERVAL_MS = parseInt(PAGE_ARGS.get("poll") || "200", 10) || 200;
+const STATUS_EXTRA = (PAGE_ARGS.get("px") === "0" ? "&px=0" : "") +
+                     (PAGE_ARGS.get("con") ? "&con=" + PAGE_ARGS.get("con") : "");
 const btnLed = document.getElementById("btnLed");
 let matrixOn = false;
 
@@ -448,7 +455,7 @@ let logVersion = -1, matrixVersion = -1;
 async function pollStatus(){
     let started = Date.now();
     try {
-        let r = await fetch("/status?lv=" + logVersion + "&mv=" + matrixVersion);
+        let r = await fetch("/status?lv=" + logVersion + "&mv=" + matrixVersion + STATUS_EXTRA);
         let s = await r.json();
 
         if (s.log !== undefined){
