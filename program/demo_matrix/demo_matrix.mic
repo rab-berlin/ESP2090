@@ -1,5 +1,4 @@
 ; demo_matrix - zeigt die Zeichenbefehle der LED-Matrix (Protokoll v2, Firmware ab v1.4)
-;  Quelle: beispiele/demo_matrix.src, erzeugt mit: python tools/micasm.py beispiele/demo_matrix.src beispiele/demo_matrix.mic
 ; 
 ;  Bedienung: Programm starten, "LED Start" in der Weboberflaeche, dann jede Taste
 ;  am 2090 zeigt die naechste Vorfuehrung. Beim Warten auf die Taste zeigt die Anzeige
