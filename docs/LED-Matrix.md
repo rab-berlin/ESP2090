@@ -65,7 +65,7 @@ wach:   1F.  MOVI F,H      ACK 15 (schlafen) bzw. F (wecken)
         F07  RET
 ```
 
-`CALL schlaf` legt die Matrix schlafen, `CALL wach` weckt sie. Nach dem Wecken setzt der ESP sofort REQ, eine Warteschleife ist nicht nötig. Das ACK muss dann aber innerhalb von 70 ms nach dem F kommen (REQ 30 ms plus 40 ms Nachlauf). Die Spiele senden es nach 5 bis 6 Schritten, also etwa 45–55 ms nach dem F.
+`CALL schlaf` legt die Matrix schlafen, `CALL wach` weckt sie. Danach wie immer auf REQ warten (`DIN`, `ANDI 1`, `BRZ`) und erst dann das ACK senden: Wie schnell der ESP nach dem F aufwacht, hängt davon ab, was er gerade tut (z. B. die Anzeige neu aufbauen). Ein ACK ohne Warten kann ins Leere gehen, dann hängt das Programm beim nächsten Schlafenlegen.
 
 **Wichtig:** Vor jeder Übertragung muss die Anzeige des 2090 mit `DISOUT` (`F02`) ausgeschaltet sein – nur dann stimmen die 9,3 ms. Wer zwischendurch etwas mit `DISP` anzeigt, schaltet sie vor dem nächsten ACK wieder aus. Am sichersten steht `DISOUT` am Anfang der Senderoutine.
 
