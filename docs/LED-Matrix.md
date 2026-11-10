@@ -44,28 +44,41 @@ Der 2090 hat keinen Takt, den der ESP sehen könnte. Die beiden verabreden desha
 
 Antwortet der 2090 nicht innerhalb von 30 ms, nimmt der ESP REQ zurück, wartet kurz und fragt erneut. So bleibt die Weboberfläche bedienbar, auch wenn auf dem 2090 gerade kein passendes Programm läuft.
 
-### Schlafmodus (ACK 15)
+### Schlafen und Wecken
 
-Solange die Matrix eingeschaltet ist, fragt der ESP immer wieder mit REQ auf Eingang 1, und jeder Wert ungleich 0 auf den Ausgängen kann ein ACK sein. Programme, die Eingang 1 oder die Ausgänge selbst brauchen – Taster an Eingang 1, ein Keypad-Scan mit `DOT 1/2/4/8` und `DIN` –, legen die Matrix deshalb zwischen den Bildern schlafen:
+Solange die Matrix eingeschaltet ist, fragt der ESP immer wieder mit REQ auf Eingang 1, und jeder Wert ungleich 0 auf den Ausgängen kann ein ACK sein. Programme, die Eingang 1 oder die Ausgänge selbst brauchen – Taster an Eingang 1, ein Keypad-Scan mit `DOT 1/2/4/8` und `DIN` –, lassen die Matrix deshalb zwischen den Bildern schlafen. Im Schlaf setzt der ESP kein REQ und beachtet auf den Ausgängen nur ein F. Das Bild bleibt stehen, die Weboberfläche zeigt einen gelben Punkt.
 
-- **Schlafen:** ACK 15 (ohne Nibble). Danach setzt der ESP kein REQ mehr und beachtet die Ausgänge nur noch auf das Wecksignal. Das Bild bleibt stehen, die Weboberfläche zeigt einen gelben Punkt.
-- **Wecken:** ein Wechsel auf F an den Ausgängen, der 0,7 ms später noch anliegt. Der ESP setzt dann sofort REQ; das nächste ACK gilt wie immer erst nach einer 0. Also: `DOT` einer F, dann `DOT` einer 0. Das F des ACK 15 selbst weckt nicht, vor dem Wecken muss also einmal etwas anderes als F auf den Ausgängen gelegen haben.
-- „LED on“ beginnt immer wach.
+**Wecken: F anlegen und halten, bis REQ kommt.** Der ESP sieht nur in Abständen nach, ob ein F anliegt – meist nach wenigen Millisekunden, bei offener Weboberfläche auch erst nach 80 ms. Ein kurzes F kann er deshalb verpassen. Bleibt es stehen, bis er mit REQ antwortet, geht nichts verloren. Was dann passiert, hängt davon ab, was auf das F folgt:
 
-Eine Routine für beides (so in [Microtris2090](https://github.com/rab-berlin/Microtris2090), [Snake2090](https://github.com/rab-berlin/Snake2090) und [Springer2090](https://github.com/rab-berlin/Springer2090)), H ist ein freies Register:
+| nach dem REQ | Wirkung |
+|---|---|
+| direkt das ACK (1–14) und seine Daten | **ein Befehl, danach schläft der ESP von selbst wieder** |
+| erst 0, dann ACKs wie gewohnt | der ESP bleibt wach, bis ein ACK 15 kommt |
+
+Ein Bild aus dem Schlaf heraus ist damit (so in [Microtris2090](https://github.com/rab-berlin/Microtris2090), [Snake2090](https://github.com/rab-berlin/Snake2090) und [Springer2090](https://github.com/rab-berlin/Springer2090)); H ist ein freies Register:
 
 ```
-schlaf: FD.  DIN H         ┐ auf REQ warten
-        31.  ANDI 1,H      │
-        E..  BRZ schlaf    ┘
-wach:   1F.  MOVI F,H      ACK 15 (schlafen) bzw. F (wecken)
-        FE.  DOT H
-        10.  MOVI 0,H      Ausgänge auf 0
-        FE.  DOT H
-        F07  RET
+bild: 1F.  MOVI F,H      ┐ F anlegen und halten
+      FE.  DOT H         ┘
+w:    FD.  DIN H         ┐ bis der ESP mit REQ antwortet
+      31.  ANDI 1,H      │
+      E..  BRZ w         ┘
+      FE.  DOT H         ACK 1 (H ist hier 1), direkt nach dem F
+      F0D  EXRL          genau ein Befehl
+      FE0  DOT R0 ...    die 16 Register
+      ...
+      FE.  DOT (0)       Ausgänge auf 0; der ESP schläft wieder
 ```
 
-`CALL schlaf` legt die Matrix schlafen, `CALL wach` weckt sie. Danach wie immer auf REQ warten (`DIN`, `ANDI 1`, `BRZ`) und erst dann das ACK senden: Wie schnell der ESP nach dem F aufwacht, hängt davon ab, was er gerade tut (z. B. die Anzeige neu aufbauen). Ein ACK ohne Warten kann ins Leere gehen, dann hängt das Programm beim nächsten Schlafenlegen.
+Das Programm muss die Matrix also nie eigens schlafen legen und wartet nur an dieser einen Stelle auf REQ.
+
+**Schlafen mit ACK 15:** Wer nach dem Wecken wach geblieben ist (oder noch nie geschlafen hat), legt die Matrix mit ACK 15 schlafen: auf REQ warten, `DOT` F, nach zwei Schritten `DOT` 0. ACK 15 hat kein Nibble.
+
+**F länger als 40 ms weckt immer.** Liest der wache ESP ein F als ACK 15 und steht es nach 40 ms noch, hält der 2090 es offenbar als Wecksignal: Der ESP bleibt wach und setzt REQ. So finden beide wieder zusammen, wenn sie einmal uneins sind, wer schläft – etwa nach einem Reset des 2090. Ein ACK 15 zum Schlafen darf deshalb höchstens drei Schritte stehen.
+
+**Taster an Eingang 1:** Wird er genau beim Wecken gehalten, sieht das Programm ein REQ, das keines ist, und sendet sein Bild zu früh. Dieses Bild kann verloren gehen; mit dem nächsten Bild stimmt wieder alles.
+
+„LED on“ beginnt immer wach.
 
 **Wichtig:** Vor jeder Übertragung muss die Anzeige des 2090 mit `DISOUT` (`F02`) ausgeschaltet sein – nur dann stimmen die 9,3 ms. Wer zwischendurch etwas mit `DISP` anzeigt, schaltet sie vor dem nächsten ACK wieder aus. Am sichersten steht `DISOUT` am Anfang der Senderoutine.
 
@@ -113,7 +126,7 @@ Im Zeichenmodus besteht ein Befehl aus dem ACK und ein oder zwei Nibbles:
 | 11 | r | Bit- und Farbmatrix schieben: 0 links, 1 rechts, 2 hoch, 3 runter; +8 mit Umlauf |
 | 13 | w | Stapel für Farb- und Bitmatrix: push, pop, peek, leeren (siehe unten) |
 | 14 | f | aktive Farbe 0–15 wählen (siehe Palette) |
-| 15 | – | Schlafmodus: kein REQ mehr, bis F auf den Ausgängen weckt (siehe unten). Das Bild bleibt stehen |
+| 15 | – | schlafen: kein REQ mehr, bis ein gehaltenes F weckt (siehe „Schlafen und Wecken“). Das Bild bleibt stehen |
 
 ACK 15 hat kein Nibble. ACK 2, 5, 9 und 12 haben bisher keine Bedeutung und werden ignoriert. Hier kommen später weitere Zeichenbefehle dazu.
 
@@ -195,7 +208,7 @@ Statt mit ACK 14 und Zeichenart 0 kann man die Farbmatrix auch von einem Userscr
 
 | Programm | Was es zeigt |
 |---|---|
-| [demo_matrix](../program/demo_matrix) | Vorführung aller Zeichenbefehle: Jede Taste am 2090 zeigt die nächste (ganze Matrix, Punkt, Rechteck, Rahmen, Ausschnitt aus- und einblenden, Linienzug, Schieben, Schlafen, Glitter, bunte Vielecke, Rahmen mit laufenden Farben, Regenbogen, Feuerwerk). 208 Befehle. |
+| [demo_matrix](../program/demo_matrix) | Vorführung aller Zeichenbefehle: Jede Taste am 2090 zeigt die nächste (ganze Matrix, Punkt, Rechteck, Rahmen, Ausschnitt aus- und einblenden, Linienzug, Schieben, Schlafen, Glitter, bunte Vielecke, Rahmen mit laufenden Farben, Regenbogen, Feuerwerk). 212 Befehle. |
 | [Film2090](https://github.com/rab-berlin/Film2090) | Ein kleiner Film mit farbigen Pixeln: Bilder im Blockmodus, Farben im Zeichenmodus mit Zeichenart 0. Nutzt alle 256 Befehle. |
 | [BerlinUhr2090](https://github.com/rab-berlin/BerlinUhr2090) | Die Berliner Mengenlehreuhr: Bilder im Blockmodus, Farben per Userscript. |
 | [Life2090](https://github.com/rab-berlin/Life2090) | Conways Game of Life: Bilder im Blockmodus. |

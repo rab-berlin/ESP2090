@@ -41,8 +41,10 @@ import matrix_draw
 
 matrix_tasks_running = False
 matrix_asleep = False        # ACK 15: Schlafmodus, REQ bleibt Low bis F auf den Ausgaengen
-matrix_display_task_handle = None
-matrix_task_handle = None
+wake_released = False        # Schlaf: die Ausgaenge haben das F des ACK 15 verlassen
+after_wake = False           # gerade geweckt: das naechste REQ steht bis zu WAKE_REQ_US
+wake_prev = 0                # Schlaf: letzter gesehener Wert der Ausgaenge (15 = altes F, weckt nicht)
+CONSOLE_MATRIX = False       # Bild nach jedem Neuaufbau auf die Konsole (/status?con=1 schaltet ein; bremst)
 
 ROWS = 8
 COLS = 8
@@ -58,7 +60,10 @@ WAIT_AFTER_ACK = 13500       # ACK 2-15: erstes Nibble wird WAIT_AFTER_ACK nach 
 NIBBLE_INTERVAL = 9217
 NUM_NIBBLES = 16
 SLEEP_ACK = 15               # ACK 15: schlafen (ohne Nibble)
-WAKE_POLL_MS = 1             # im Schlaf: Ausgaenge so oft lesen (das F steht mindestens 9 ms)
+WAKE_POLL_MS = 1             # im Schlaf: Ausgaenge so oft lesen (der 2090 haelt das F, bis REQ kommt)
+SLEEP_RELEASE_US = 40000     # nach ACK 15 so lange warten, bis der 2090 das F wieder wegnimmt;
+                             # steht es laenger, ist es ein Wecksignal (der ESP bleibt wach)
+WAKE_REQ_US = 200000         # erstes REQ nach dem Wecken: so lange auf das ACK warten
 
 # ----- Helligkeit begrenzen (Versorgung ueber USB) -----
 # Jede LED zieht je Farbkanal bei 255 etwa 20 mA. Ueber LED_MAX_MA wird das
@@ -172,17 +177,22 @@ def setPalette(index, rgb):
         log("Error: palette has colors 0-15")
    
 
-async def matrix_display_task():
+def matrix_show():
+    """Anzeige neu aufbauen, wenn sich etwas geaendert hat."""
     global matrix_dirty
-
-    while True:
-
-        if matrix_dirty:
-            matrix_dirty = False
-            M.render(np)
-            np.write()
+    if matrix_dirty:
+        matrix_dirty = False
+        M.render(np)
+        np.write()
+        if CONSOLE_MATRIX:
             matrix_print_console(M.bits)
-            
+
+
+async def matrix_display_task():
+    # matrix_task zeigt empfangene Bilder sofort selbst an (matrix_show); hier kommen
+    # nur noch Aenderungen von aussen an (User-Scripts: setColors, setPalette).
+    while True:
+        matrix_show()
         await asyncio.sleep_ms(20)
 
 
@@ -200,27 +210,56 @@ def matrix_print_console(matrix):
     print()
     
 
+def matrix_go_sleep():
+    """Direkt nach dem ACK 15 (noch blockierend): warten, bis der 2090 das F des ACK 15
+    wegnimmt (bei der ueblichen Routine 2 Schritte, ca. 19 ms). Ab dann weckt jedes F,
+    das die Abfrage sieht."""
+    global wake_released
+    t0 = time.ticks_us()
+    while (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111 == 15:
+        if time.ticks_diff(time.ticks_us(), t0) >= SLEEP_RELEASE_US:
+            break
+    wake_released = (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111 != 15
+    global after_wake
+    if not wake_released:
+        # Das F steht laenger als ein ACK 15 (2 Schritte): Der 2090 haelt es als Wecksignal
+        # und wartet auf REQ (z. B. weil der ESP noch wach war). Nicht schlafen, gleich REQ.
+        after_wake = True
+        return
+    matrix_sleep_now(0)
+
+
+def matrix_sleep_now(last):
+    """Einschlafen. last = Wert, der gerade auf den Ausgaengen liegt: Ist es F (letztes
+    Datennibble), weckt erst ein neuer Wechsel auf F."""
+    global matrix_asleep, wake_prev
+    wake_prev = 15 if last == 15 else 0
+    matrix_asleep = True
+
+
 async def matrix_wait_wake():
-    """Schlafmodus nach ACK 15: REQ bleibt Low, der 2090 kann Eingang 1 und die
-    Ausgaenge frei benutzen (Taster, Keypad). Geweckt wird mit F auf den Ausgaengen:
-    ein Wechsel auf F, der 0,7 ms spaeter noch steht. Das F des ACK 15 selbst
-    zaehlt nicht (prev beginnt mit F)."""
-    global matrix_asleep
-    prev = 15
+    """Schlaf: REQ bleibt Low, der 2090 kann Eingang 1 und die Ausgaenge frei benutzen
+    (Taster, Keypad). Geweckt wird mit F auf den Ausgaengen, das 0,7 ms spaeter noch
+    anliegt. Der 2090 haelt das F, bis er REQ sieht; wie spaet diese Abfrage drankommt
+    (Weboberflaeche), spielt deshalb keine Rolle. Ein F, das schon beim Einschlafen
+    anlag (wake_prev), weckt nicht."""
+    global matrix_asleep, after_wake
+    prev = wake_prev
     while True:
         v = (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111
         if v == 15 and prev != 15:
             time.sleep_us(WAIT_AFTER_DETECT)
             if (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111 == 15:
-                matrix_asleep = False
-                return
+                break
         prev = v
         await asyncio.sleep_ms(WAKE_POLL_MS)
+    after_wake = True
+    matrix_asleep = False
 
 
 async def matrix_task():
     
-    global matrix_dirty, matrix_asleep
+    global matrix_dirty, matrix_asleep, after_wake
     nibbles_of = matrix_draw.NIBBLES
 
     while True:
@@ -238,7 +277,12 @@ async def matrix_task():
         req_time = time.ticks_us()
         ack_time = None
         seen_zero = False
+        saw_f = False                                  # F liegt an (gehaltenes Wecksignal)
+        auto_sleep = False                             # ACK kam direkt aus dem gehaltenen F: danach schlafen
+        last = 0                                       # zuletzt gelesenes Nibble
         timed_out = False
+        req_len = WAKE_REQ_US if after_wake else WAIT_AFTER_REQ
+        after_wake = False
 
         # =========================
         # 2. Auf ACK warten 
@@ -256,6 +300,18 @@ async def matrix_task():
             if not seen_zero:
                 if v == 0:
                     seen_zero = True                               # erst Ruhe (0), dann gilt eine Flanke als ACK
+                elif v == 15:
+                    saw_f = True                                   # der 2090 haelt F, bis er REQ sieht
+                elif saw_f:                                        # F weggenommen: zaehlt wie eine 0,
+                    time.sleep_us(WAIT_AFTER_DETECT)               # der neue Wert kann schon das ACK sein
+                    ack = (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111
+                    if ack == 0:
+                        seen_zero = True
+                    elif ack != 15:
+                        ack_time = time.ticks_us()
+                        out_1.value(0)
+                        auto_sleep = True
+                        break
             elif v:                                                # Irgendwas hat "gezuckt"
                 time.sleep_us(WAIT_AFTER_DETECT)                   # bremst, damit Ausgaenge stabil sind
                 ack = (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111   # liest nochmal ein
@@ -265,10 +321,10 @@ async def matrix_task():
             
             # Timeout: REQ Low. Hat der 2090 REQ kurz vorher noch gesehen, kommt
             # sein ACK bis zu 3 Schritte spaeter; so lange wird weiter gelesen.
-            if not timed_out and elapsed >= WAIT_AFTER_REQ:
+            if not timed_out and elapsed >= req_len:
                 out_1.value(0)
                 timed_out = True
-            elif timed_out and elapsed >= WAIT_AFTER_REQ + WAIT_GUARD:
+            elif timed_out and elapsed >= req_len + WAIT_GUARD:
                 break
 
         if ack_time is None:
@@ -302,10 +358,11 @@ async def matrix_task():
                 
                 next_time = time.ticks_add(next_time, NIBBLE_INTERVAL)
             
+            last = v
             matrix_dirty = True
 
         elif ack == SLEEP_ACK:
-            matrix_asleep = True
+            matrix_go_sleep()
 
         elif nibbles_of[ack]:
             # ACK 2-15: Nibbles direkt im naechsten Schritt, gelesen in dessen Mitte
@@ -317,11 +374,19 @@ async def matrix_task():
                     pass
                 data[k] = (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111
                 next_time = time.ticks_add(next_time, NIBBLE_INTERVAL)
+            last = data[n - 1]
             try:
                 if M.command(ack, data):
                     matrix_dirty = True
             except Exception as e:
                 log("Matrix command {} {}: {}".format(ack, data, e))
+
+        # Kam das ACK direkt aus einem gehaltenen F (Wecken fuer genau einen Befehl),
+        # schlaeft der ESP danach von selbst wieder: kein REQ, bis das naechste F weckt.
+        if auto_sleep and not matrix_asleep and not after_wake:
+            matrix_sleep_now(last)
+
+        matrix_show()                                  # Bild sofort anzeigen
             
         await asyncio.sleep_ms(10) # fuer display task
 
@@ -851,16 +916,21 @@ async def status(req):
         mv = int(req.args.get("mv", "-1"))
     except ValueError:
         lv = mv = -1
+    global CONSOLE_MATRIX
+    con = req.args.get("con")
+    if con in ("0", "1"):
+        CONSOLE_MATRIX = con == "1"
     s = {
         "running": 1 if current_task and not current_task.done() else 0,
         "matrix": 1 if matrix_tasks_running else 0,
         "sleep": 1 if matrix_tasks_running and matrix_asleep else 0,
+        "mem": gc.mem_free() if hasattr(gc, "mem_free") else 0,
         "lv": log_version,
         "mv": np.version,
     }
     if lv != log_version:
         s["log"] = "\n".join(log_buffer)
-    if mv != np.version:
+    if mv != np.version and req.args.get("px") != "0":
         s["px"] = np.hex_rows()   # LED-Bild immer (auch Scripts ohne Matrix-Task)
     return s
 
