@@ -36,6 +36,8 @@ Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emu
 
 Die Preise sind von AliExpress. Wer das alles frisch ordert, kommt ohne Platine für etwa 20 Euro weg - und hat danach noch viele Ersatzteile übrig. Ich bin aber sicher, dass du das meiste sowieso schon vorrätig hast. Lediglich den ESP, die Metallösen, die Platine und wahrscheinlich die LED-Matrix musst du wohl bestellen.
 
+**Nachtrag 11/2026:** Inzwischen gibt es leider neue Zölle auf Lieferungen aus China, und das trifft unser Hobby sehr: 3 Euro pauschal auf jede *Warengruppe*. Widerstände, Kondensatoren, ICs, Steckleisten usw. sind verschiedene Gruppen – also jeweils 3 Euro obendrauf. Bei den Kleinteil-Sortimenten oben ist das schnell mehr als der Warenwert. Man muss abwarten, ob das noch besser wird oder ob andere günstige Bezugsquellen kommen – aber die wenigen Lötkolbenverrückten haben nun mal keine Lobby.
+
 Du kannst natürlich auch ohne IC-Sockel und Buchsenleisten alles direkt auf die Platine löten. Ich persönlich hab´s aber lieber flexibel - versuch mal, einen falsch eingelöteten oder nicht funktionierenden IC wieder auszulöten...
 
 Wer es richtig schön will, druckt sich noch einen passenden Busch-Bauteilträger dazu aus. ~~Daran arbeite ich noch...~~ [SCAD-](https://github.com/rab-berlin/ESP2090/blob/main/3d/ESP2090_mit_Zapfen.scad) und STL-Datei. Zur Befestigung der Platine am Träger brauchst du vier winzige Schrauben M2 und passende Muttern.
@@ -86,6 +88,8 @@ Jeder Ausgang des Microtronic ist an je zwei Eingänge eines 74HCT244 angeschlos
 
 Es ist zu beachten, dass der 74HCT244 maximal 20 mA an seinen Ausgängen liefert. Mehr sollte man auch dem Microtronic niemals abverlangt haben, wenn man seine Ausgänge nicht überlasten wollte - laut Anleitungsbuch 2. Teil, S. 41: "maximal 15 mA". Wer mehr will oder braucht, steuert mit dem Ausgang wie üblich erstmal einen Transistor an.
 
+**Reihenfolge beim Einschalten:** Ist der ESP stromlos, der Microtronic aber eingeschaltet, fließen je Ausgang des 74HCT244 etwa 4 mA Richtung ESP. Dadurch leuchtet sogar die LED auf dem ESP32-C3. Das ist nur kosmetisch und schadet nicht, denn die Ausgänge dürfen bis 15 mA liefern. Am besten aber immer **zuerst den ESP einschalten** – dann sind alle Verbindungen hochohmig.
+
 ## Was kann ich damit machen?
 
 Die einfache Antwort: alles. 
@@ -102,11 +106,352 @@ Wenn du bisher noch nie etwas mit Protokollen zu tun haben wolltest (hast du abe
 
 Ein Protokoll ist nichts weiter als eine Verabredung: Wer legt wann welches Nibble auf die Leitungen, und woran erkennt der andere, dass er es lesen darf? Der Microtronic hat vier Ausgänge und vier Eingänge, mehr nicht – aber das reicht für erstaunlich viel. Das ESP2090-Studio bietet dafür zwei Wege:
 
-- **Userscripts in Python.** Ein kleines Programm auf dem ESP wartet auf Daten an den Ausgängen des Microtronic und/oder legt etwas auf seine Eingänge – nach einem Protokoll, das du selbst festlegst (Nibblefolgen, Anfrage und Antwort, Timing). Beispiele: ein Klavier mit dem Buzzer, ein Zähler mit den Tasten der Weboberfläche und echte Zufallszahlen für den 2090. → [Userscripts](docs/Userscripts.md)
+- **Userscripts in Python.** Ein kleines Programm auf dem ESP wartet auf Daten an den Ausgängen des Microtronic und/oder legt etwas auf seine Eingänge – nach einem Protokoll, das du selbst festlegst (Nibblefolgen, Anfrage und Antwort, Timing). Beispiele: ein Klavier mit dem Buzzer, ein Zähler mit den Tasten der Weboberfläche und echte Zufallszahlen für den 2090. → [Userscripts](#userscripts-der-esp2090-als-peripherie)
 
-- **Die LED-Matrix als Bildschirm.** Ein Sonderfall, fest in die Firmware eingebaut: Der Microtronic schickt entweder ganze Bilder (16 Register, „Blockmodus“) oder kurze Zeichenbefehle für Punkt, Rechteck, Rahmen, Linie, Farbe und Schieben („Zeichenmodus“). Weil das Timing hier auf die Millisekunde stimmen muss, ist das Protokoll genau beschrieben – mit Bildern und Beispielprogrammen. → [LED-Matrix](docs/LED-Matrix.md)
+- **Die LED-Matrix als Bildschirm.** Ein Sonderfall, fest in die Firmware eingebaut: Der Microtronic schickt entweder ganze Bilder (16 Register, „Blockmodus“) oder kurze Zeichenbefehle für Punkt, Rechteck, Rahmen, Linie, Farbe und Schieben („Zeichenmodus“). Weil das Timing hier auf die Millisekunde stimmen muss, ist das Protokoll genau beschrieben – mit Bildern und Beispielprogrammen. → [LED-Matrix](#die-led-matrix-als-bildschirm)
 
-## Beispiele
+## Userscripts: der ESP2090 als Peripherie
+
+Ein Userscript ist ein kleines Python-Programm, das auf dem ESP2090 läuft und mit dem Microtronic über dessen Ein- und Ausgänge spricht. Du schreibst es im Editor der Weboberfläche, speicherst es im Ordner `userscripts` auf dem ESP und startest es mit **Run** (und beendest es mit **Stop**). Ein Neuflashen der Firmware ist dafür nie nötig.
+
+Welche Funktionen ein Userscript benutzen kann (`setOutputs`, `getInputs`, `beep`, `log`, `tasteG` …), steht in der [Beschreibung der Firmware](firmware/README.md).
+
+### Wer sendet wohin?
+
+Die Namen in den Userscripts sind aus Sicht des ESP gewählt:
+
+| im Userscript | am 2090 | Richtung | auf dem 2090 |
+|---|---|---|---|
+| `setOutputs(wert)`, `out_1` … `out_4` | Eingänge 1–4 | ESP → 2090 | `DIN Rx` liest den Wert |
+| `getInputs()`, `in_1` … `in_4` | Ausgänge 1–4 | 2090 → ESP | `DOT Rx` gibt den Wert aus |
+
+Wert 1 ist jeweils Ein- bzw. Ausgang 1, Wert 8 Ein- bzw. Ausgang 4. Die originalen Klemmen des 2090 bleiben dabei nutzbar: Die Eingänge sind mit den Signalen des ESP verODERt, die Ausgänge werden für den ESP nur mitgelesen.
+
+### Protokolle: Nibbles und Zeit
+
+Zwischen den beiden laufen nur 4 Bit in jede Richtung, und keiner kann dem anderen „Bescheid sagen“, außer über genau diese Leitungen. Damit trotzdem nichts verloren geht, verabreden das Programm im 2090 und das Userscript eine Reihenfolge – ein **Protokoll**. Zwei Muster reichen für sehr vieles:
+
+**1. Nur in eine Richtung.** Einer legt einen Wert an, der andere schaut regelmäßig nach. Damit das klappt, muss der Wert lange genug anliegen. Das Userscript schaut in den Beispielen alle 5 ms nach, der 2090 braucht für einen Befehl etwa 9,3 ms (mit eingeschalteter Anzeige länger). Ein Wert, den der 2090 für vier oder fünf Befehle stehen lässt, kommt also sicher an. Umgekehrt sollte das Userscript einen Wert so lange halten, bis der 2090 ihn gelesen hat – oder deutlich länger, als die Leseschleife im 2090 braucht.
+
+**2. Anfrage und Antwort (Handshake).** Der 2090 stellt eine Frage (z. B. Ausgang 1 an), das Userscript antwortet auf den Eingängen und wartet, bis der 2090 „fertig“ meldet (Ausgänge wieder 0). Erst dann räumt es seine Antwort weg. So spielt es keine Rolle, wie schnell der eine oder der andere gerade ist.
+
+Ein paar Hinweise aus der Praxis:
+
+- **Nicht auf feste Zeiten bauen.** Mit eingeschalteter Anzeige ist der 2090 langsamer, und auch der ESP hat nebenbei zu tun (Webserver). Lieber warten, bis sich etwas ändert, als eine bestimmte Zeit abzuzählen. Feste Zeiten braucht nur die [LED-Matrix](#die-led-matrix-als-bildschirm), die deshalb in der Firmware eingebaut ist.
+- **Ausgänge schalten nacheinander.** Ein `DOT` des 2090 schaltet die vier Ausgänge nicht gleichzeitig, sondern nacheinander: Nach der ersten erkennbaren Änderung dauert es noch etwa 138 µs (auf high) bzw. 166 µs (auf low), bis der Wert vollständig anliegt (Bild im Abschnitt [Wie die Übertragung abläuft](#wie-die-übertragung-abläuft)). Wer genau dann liest, bekommt einen Zwischenwert. Wo es darauf ankommt: nach einer Änderung kurz warten (1 ms) und noch einmal lesen.
+- **Ruhezustand 0.** Wenn alle Ausgänge auf 0 stehen, „sagt niemand etwas“. Wer einen Wert gesendet hat, setzt am Ende wieder 0.
+- **Matrix und Userscript nicht gleichzeitig an denselben Leitungen.** Die LED-Matrix benutzt Eingang 1 (Anfrage) und alle vier Ausgänge. Wer die Matrix eingeschaltet hat („LED on“), sollte kein Userscript laufen lassen, das ebenfalls darauf hört oder Eingang 1 setzt.
+
+### Regeln für Userscripts
+
+Userscripts laufen neben Webserver und Matrix auf demselben kleinen Prozessor. Damit alle drankommen, muss jedes Script die Kontrolle regelmäßig abgeben:
+
+- In jeder Schleife `await asyncio.sleep_ms(...)` verwenden, nie `time.sleep`.
+- Kein `input()`.
+
+Vor dem Start prüft der ESP das Script und startet es nicht, wenn eine `while`- oder `for`-Schleife kein `await` enthält (Ausnahme: `for ... in range(n)` mit einer festen Zahl bis 64). Beim Speichern erscheint schon eine Warnung. Nach dem Ende oder bei **Stop** werden die Ausgänge auf 0 gesetzt und ein Ton beendet.
+
+### Beispiele für Userscripts
+
+Zu jedem Beispiel gehört ein Programm für den 2090 (`.mic`, ausführlich kommentiert, zum Hochladen mit **Upload**) und ein Userscript (`.py`). Die Programme sind kurz genug, um sie auch von Hand einzutippen.
+
+**So startest du ein Beispiel:** Den Inhalt der `.py`-Datei in den Editor der Weboberfläche kopieren, unter einem Namen speichern (z. B. `ton.py`) und mit **Run** starten. Dann das Programm zum 2090 übertragen und dort starten. Die Matrix muss dabei aus sein.
+
+#### Lauflicht – nur der ESP
+
+[firmware/userscripts/beispiel_lauflicht.py](firmware/userscripts/beispiel_lauflicht.py) liegt schon auf dem ESP. Es schaltet die Eingänge des 2090 im Halbsekundentakt nacheinander ein (Wert 1, 2, 4, 8). Gut zum Ausprobieren, ob alles verbunden ist. Sichtbar wird es mit drei Befehlen auf dem 2090, die die Eingänge laufend anzeigen:
+
+```
+00  FD0  DIN R0
+01  F10  DISP 1,R0
+02  C00  GOTO 00
+```
+
+#### Ton – der 2090 als Klavier (eine Richtung: 2090 → ESP)
+
+[program/ton](program/ton): Die Tasten 1–F am 2090 spielen eine C-Dur-Tonleiter über zwei Oktaven auf dem Buzzer des ESP2090.
+
+- **2090** (10 Befehle): wartet mit `KIN` auf eine Taste, zeigt sie an, legt sie mit `DOT` auf die Ausgänge, lässt sie vier `NOP` lang stehen und setzt die Ausgänge wieder auf 0.
+- **Userscript:** schaut alle 5 ms auf die Ausgänge des 2090. Bei jedem neuen Wert ungleich 0 spielt es 300 ms lang den passenden Ton.
+
+```python
+TOENE = [0, 262, 294, 330, 349, 392, 440, 494,
+         523, 587, 659, 698, 784, 880, 988, 1047]
+alt = 0
+while True:
+    wert = getInputs()
+    if wert != alt:
+        if wert != 0:
+            beep(TOENE[wert], 300)
+        alt = wert
+    await asyncio.sleep_ms(5)
+```
+
+Weil der 2090 nach jedem Ton wieder 0 ausgibt, klingt auch dieselbe Taste zweimal hintereinander zweimal.
+
+#### Web-Taster – Zähler mit G und H (eine Richtung: ESP → 2090)
+
+[program/webtaster](program/webtaster): Die Tasten **Key G** und **Key H** der Weboberfläche (oder Leertaste und H auf der Tastatur) zählen auf dem 2090 hoch und herunter.
+
+- **Userscript:** legt G auf Eingang 1 und H auf Eingang 2, solange die Taste gedrückt ist (in der Weboberfläche 0,5 s).
+- **2090** (16 Befehle): liest die Eingänge mit `DIN`, zählt bei Eingang 1 hoch, bei Eingang 2 herunter und wartet dann, bis keine Taste mehr anliegt – sonst würde er während der halben Sekunde ständig weiterzählen.
+
+```python
+while True:
+    wert = 0
+    if tasteG["pressed"]:
+        wert = wert | 1
+    if tasteH["pressed"]:
+        wert = wert | 2
+    setOutputs(wert)
+    await asyncio.sleep_ms(20)
+```
+
+#### Zufallszahl – Anfrage und Antwort (beide Richtungen)
+
+[program/zufallszahl](program/zufallszahl): Jede Taste am 2090 holt eine echte Zufallszahl 0–F vom ESP und zeigt sie an. Der ESP32 hat einen Zufallsgenerator in Hardware – ein Zufall, der deutlich zufälliger ist als der des 2090.
+
+Das Protokoll ist ein Handshake:
+
+1. **2090:** Ausgang 1 an (Anfrage).
+2. **ESP:** legt die Zahl auf die Eingänge 1–4.
+3. **2090:** wartet ein paar Befehle, liest die Zahl mit `DIN`.
+4. **2090:** Ausgänge auf 0 (fertig) – erst dann setzt der ESP die Eingänge wieder auf 0.
+
+```python
+import os
+while True:
+    if getInputs() == 1:                    # Anfrage vom 2090
+        zahl = os.urandom(1)[0] & 15
+        setOutputs(zahl)                    # Antwort
+        while getInputs() != 0:             # warten, bis der 2090 fertig ist
+            await asyncio.sleep_ms(5)
+        setOutputs(0)
+    await asyncio.sleep_ms(5)
+```
+
+Auf diesem Muster lässt sich vieles aufbauen: Messwerte von einem Sensor, die Uhrzeit aus dem Internet, ein zweites Nibble für größere Zahlen (einfach zweimal fragen) …
+
+## Die LED-Matrix als Bildschirm
+
+Die 8x8-LED-Matrix ist ein Sonderfall der Kommunikation über die Ein- und Ausgänge: Der Microtronic schickt Daten über seine vier Ausgänge, das ESP2090-Studio liest sie und zeichnet. Im Unterschied zu den [Userscripts](#userscripts-der-esp2090-als-peripherie) ist das Protokoll fest in die Firmware eingebaut. Auf dem 2090 läuft dafür eine besondere Senderoutine, auf dem ESP muss nur die Matrix eingeschaltet sein (**„LED on“** in der Weboberfläche). Was die Matrix zeigt, erscheint auch live in der Weboberfläche.
+
+Es gibt zwei Arten, die Matrix zu benutzen, und beide lassen sich in einem Programm mischen:
+
+- **Blockmodus:** Der 2090 schickt ein ganzes Bild: 16 Register mit je 4 Bit = 64 Pixel. So arbeitet z. B. die [BerlinUhr2090](https://github.com/rab-berlin/BerlinUhr2090).
+- **Zeichenmodus:** Der 2090 schickt kurze Befehle mit ein oder zwei Nibbles: Punkt, Rechteck, Rahmen, Linie, Farbe, Schieben … So kommt man mit wenigen Befehlen zu bunten Bildern und spart Register.
+
+### Zwei Ebenen: Bitmatrix und Farbmatrix
+
+Der ESP merkt sich das Bild in zwei Ebenen mit je 64 Einträgen:
+
+- Die **Bitmatrix** sagt, **welche Pixel an sind** (1 Bit je Pixel).
+- Die **Farbmatrix** sagt, **in welcher Farbe** ein Pixel leuchtet, wenn es an ist (eine der 16 Farben der Palette, siehe unten). Am Anfang ist sie überall rot.
+
+Sichtbar ist: Pixel an → Farbe aus der Farbmatrix. Ist ein Pixel aus, ist es dunkel, egal welche Farbe für diese Stelle eingetragen ist.
+
+![Bitmatrix und Farbmatrix ergeben die Anzeige](docs/bilder/matrix-ebenen.svg)
+
+Die Trennung ist praktisch: Die Farben legt man einmal fest (zum Beispiel Streifen wie oben, oder die Farben der BerlinUhr), danach schickt der 2090 nur noch, *welche* Pixel leuchten – die Farbe kommt automatisch mit. Umgekehrt kann man Farben ändern, ohne das Bild neu zu schicken.
+
+Wer schreibt in welche Ebene?
+
+| | Bitmatrix | Farbmatrix |
+|---|---|---|
+| Blockmodus (ganzes Bild) | ✓ | – |
+| Zeichenmodus | je nach Zeichenart (siehe unten) | je nach Zeichenart |
+| pop/peek (ACK 13) | ✓ (w = 6, 7, 10, 11) | ✓ (w = 5, 7, 9, 11) |
+| Userscript `setColors(...)` | – | ✓ |
+
+### Wie die Übertragung abläuft
+
+Der 2090 hat keinen Takt, den der ESP sehen könnte. Die beiden verabreden deshalb einen Startzeitpunkt, und danach zählt der ESP einfach mit: **Bei ausgeschalteter Anzeige (`DISOUT`) braucht der 2090 für jeden Befehl ziemlich genau 9,3 ms.**
+
+1. **Anfrage (REQ):** Der ESP setzt Eingang 1 des 2090 auf 1. Ein ACK erkennt er erst, nachdem die Ausgänge des 2090 einmal auf 0 standen.
+2. **Antwort (ACK):** Der 2090 wartet in einer Schleife auf REQ (`DIN`, `ANDI`, `BRZ`) und legt dann mit `DOT` eine Befehlsnummer 1–15 auf seine Ausgänge. Der ESP erkennt sie, liest nach 0,7 ms zur Kontrolle noch einmal und nimmt REQ zurück.
+
+   Die Kontrolle ist nötig, weil der 2090 langsam ist: Ein `DOT` schaltet die vier Ausgänge nicht gleichzeitig, sondern nacheinander. Sobald der ESP die erste Änderung erkennt (z. B. Ausgang 1 ist high), dauert es noch einmal etwa 138 µs, bis alle vier Ausgänge high sind – im Bild kommt Ausgang 4 erst bei +138 µs. Auf low fallen die Ausgänge noch langsamer, in etwa 166 µs. Würde der ESP den ersten Wert nehmen, den er sieht, bekäme er oft einen Zwischenwert. Nach 0,7 ms steht der Wert sicher.
+
+   ![Der 2090 schaltet seine Ausgänge nacheinander (Logic-Analyzer)](docs/bilder/2090-ausgaenge-nacheinander.jpg)
+3. **Daten:** Danach gibt der 2090 in jedem Befehlsschritt ein Nibble mit `DOT` aus, im Blockmodus 16, im Zeichenmodus ein oder zwei. Der ESP liest jeweils in der Mitte des Schritts. Die genauen Zeiten stehen bei den beiden Modi.
+4. **Ende:** Der 2090 setzt seine Ausgänge wieder auf 0. Erst danach erkennt der ESP das nächste ACK – ein Wert, der auf den Ausgängen liegen bleibt, wird also nicht doppelt gelesen.
+
+Antwortet der 2090 nicht innerhalb von 30 ms, nimmt der ESP REQ zurück, wartet kurz und fragt erneut. So bleibt die Weboberfläche bedienbar, auch wenn auf dem 2090 gerade kein passendes Programm läuft.
+
+#### Schlafen und Wecken
+
+Solange die Matrix eingeschaltet ist, fragt der ESP immer wieder mit REQ auf Eingang 1, und jeder Wert ungleich 0 auf den Ausgängen kann ein ACK sein. Programme, die Eingang 1 oder die Ausgänge selbst brauchen – Taster an Eingang 1, ein Keypad-Scan mit `DOT 1/2/4/8` und `DIN` –, lassen die Matrix deshalb zwischen den Bildern schlafen. Im Schlaf setzt der ESP kein REQ und beachtet auf den Ausgängen nur ein F. Das Bild bleibt stehen, die Weboberfläche zeigt einen gelben Punkt.
+
+**Wecken: F anlegen und halten, bis REQ kommt.** Der ESP sieht nur in Abständen nach, ob ein F anliegt – meist nach wenigen Millisekunden, bei offener Weboberfläche auch erst nach 80 ms. Ein kurzes F kann er deshalb verpassen. Bleibt es stehen, bis er mit REQ antwortet, geht nichts verloren. Was dann passiert, hängt davon ab, was auf das F folgt:
+
+| nach dem REQ | Wirkung |
+|---|---|
+| direkt das ACK (1–14) und seine Daten | **ein Befehl, danach schläft der ESP von selbst wieder** |
+| erst 0, dann ACKs wie gewohnt | der ESP bleibt wach, bis ein ACK 15 kommt |
+
+Ein Bild aus dem Schlaf heraus ist damit (so in [Microtris2090](https://github.com/rab-berlin/Microtris2090), [Snake2090](https://github.com/rab-berlin/Snake2090) und [Springer2090](https://github.com/rab-berlin/Springer2090)); H ist ein freies Register:
+
+```
+bild: 1F.  MOVI F,H      ┐ F anlegen und halten
+      FE.  DOT H         ┘
+w:    FD.  DIN H         ┐ bis der ESP mit REQ antwortet
+      31.  ANDI 1,H      │
+      E..  BRZ w         ┘
+      FE.  DOT H         ACK 1 (H ist hier 1), direkt nach dem F
+      F0D  EXRL          genau ein Befehl
+      FE0  DOT R0 ...    die 16 Register
+      ...
+      FE.  DOT (0)       Ausgänge auf 0; der ESP schläft wieder
+```
+
+Das Programm muss die Matrix also nie eigens schlafen legen und wartet nur an dieser einen Stelle auf REQ.
+
+**Schlafen mit ACK 15:** Wer nach dem Wecken wach geblieben ist (oder noch nie geschlafen hat), legt die Matrix mit ACK 15 schlafen: auf REQ warten, `DOT` F, nach zwei Schritten `DOT` 0. ACK 15 hat kein Nibble.
+
+**F länger als 40 ms weckt immer.** Liest der wache ESP ein F als ACK 15 und steht es nach 40 ms noch, hält der 2090 es offenbar als Wecksignal: Der ESP bleibt wach und setzt REQ. So finden beide wieder zusammen, wenn sie einmal uneins sind, wer schläft – etwa nach einem Reset des 2090. Ein ACK 15 zum Schlafen darf deshalb höchstens drei Schritte stehen.
+
+**Taster an Eingang 1:** Wird er genau beim Wecken gehalten, sieht das Programm ein REQ, das keines ist, und sendet sein Bild zu früh. Dieses Bild kann verloren gehen; mit dem nächsten Bild stimmt wieder alles.
+
+„LED on“ beginnt immer wach.
+
+**Wichtig:** Vor jeder Übertragung muss die Anzeige des 2090 mit `DISOUT` (`F02`) ausgeschaltet sein – nur dann stimmen die 9,3 ms. Wer zwischendurch etwas mit `DISP` anzeigt, schaltet sie vor dem nächsten ACK wieder aus. Am sichersten steht `DISOUT` am Anfang der Senderoutine.
+
+### Blockmodus: ein ganzes Bild
+
+Im Blockmodus schickt der 2090 nach ACK 1 den Inhalt von 16 Registern. Jedes Register stellt vier Pixel dar. Die Register füllen die Bitmatrix zeilenweise von unten nach oben, jede Zeile besteht aus zwei Registern: das gerade für die linke Hälfte, das ungerade für die rechte. Bit 0 (Wert 1) ist jeweils das linke Pixel der Hälfte.
+
+![Welches Register welche Pixel darstellt](docs/bilder/matrix-blockmodus-register.svg)
+
+Die Farben kommen aus der Farbmatrix – der Blockmodus ändert sie nicht.
+
+**Zeitablauf:** Zwischen ACK und dem ersten Register steht genau **ein** Befehl (meist `EXRL`, siehe unten). Das erste Register liest der ESP 23,4 ms nach dem ACK, die weiteren alle 9,2 ms.
+
+![Zeitablauf im Blockmodus](docs/bilder/matrix-blockmodus-zeit.svg)
+
+**Senderoutine:** Weil der 2090 nur 16 Register hat und einige davon für das Programm selbst braucht, liegt die untere Hälfte des Bildes meist in den Speicherregistern 0–7. `EXRL` tauscht sie direkt vor dem Senden in die Register 0–7 und danach wieder zurück. Gleichzeitig ist `EXRL` genau der eine Befehl, der zwischen ACK und erstem Register stehen muss (so in `film_color` und der BerlinUhr):
+
+```
+bild: FD0  DIN R0        ┐ warten auf REQ
+      310  ANDI 1,R0     │
+      E..  BRZ bild      ┘
+      FE0  DOT R0        ACK 1 (R0 ist hier 1)
+      F0D  EXRL          Register 0-7 mit den Speicherregistern 0-7 tauschen
+      FE0  DOT R0        Register 0: unterste Zeile, links
+      FE1  DOT R1        Register 1: unterste Zeile, rechts
+      ...
+      FEF  DOT RF        Register F: oberste Zeile, rechts
+      F0D  EXRL          zurücktauschen
+      FE.  DOT R.        ein Register mit 0: Ausgänge auf 0
+      F07  RET
+```
+
+### Zeichenmodus: Befehle mit Koordinaten
+
+Im Zeichenmodus besteht ein Befehl aus dem ACK und ein oder zwei Nibbles:
+
+| ACK | Nibbles | Wirkung |
+|---|---|---|
+| 3 | a | ganze Matrix in Zeichenart a (z. B. alles in der aktiven Farbe an, alles aus) |
+| 4 | x, y | Cursor 1 setzen und Punkt zeichnen |
+| 6 | x, y | Cursor 2 setzen, gefülltes Rechteck zwischen Cursor 1 und 2 |
+| 7 | x, y | Cursor 2 setzen, Rechteck als Rahmen |
+| 8 | x, y | Cursor 2 setzen, Linie; danach Cursor 1 = Cursor 2 (Linienzug) |
+| 10 | k, w | die vier Pixel, die im Blockmodus Register k darstellt, auf w setzen |
+| 11 | r | Bit- und Farbmatrix schieben: 0 links, 1 rechts, 2 hoch, 3 runter; +8 mit Umlauf |
+| 13 | w | Stapel für Farb- und Bitmatrix: push, pop, peek, leeren (siehe unten) |
+| 14 | f | aktive Farbe 0–15 wählen (siehe Palette) |
+| 15 | – | schlafen: kein REQ mehr, bis ein gehaltenes F weckt (siehe „Schlafen und Wecken“). Das Bild bleibt stehen |
+
+ACK 15 hat kein Nibble. ACK 2, 5, 9 und 12 haben bisher keine Bedeutung und werden ignoriert. Hier kommen später weitere Zeichenbefehle dazu.
+
+**Koordinaten:** x ist die Spalte (0 links bis 7 rechts), y die Zeile (0 unten bis 7 oben).
+
+![Koordinaten im Zeichenmodus](docs/bilder/matrix-zeichenmodus-koordinaten.svg)
+
+**Zeichenart:** Eine Koordinate braucht nur 3 Bit. Das vierte Bit (Wert 8) von x und y legt fest, was in Bit- und Farbmatrix geschrieben wird:
+
+| x +8 | y +8 | Zeichenart | Farbmatrix | Bitmatrix | wozu |
+|---|---|---|---|---|---|
+| – | – | 0 | aktive Farbe | bleibt | Cursor 1 setzen, ohne etwas zu zeigen; Farben vorbereiten, bevor die Pixel kommen |
+| ✓ | – | 1 | aktive Farbe | an (bei Farbe 0 = schwarz: aus) | normales Zeichnen |
+| – | ✓ | 2 | bleibt | an | einen Ausschnitt zeigen |
+| ✓ | ✓ | 3 | bleibt | aus | einen Ausschnitt ausblenden |
+
+Im Bild: `ACK 4` mit x = 1, y = 1 setzt Cursor 1, dann zeichnet `ACK 6` mit x = 4+8, y = 3 das gefüllte Rechteck in der aktiven Farbe. Die blaue Linie entsteht aus `ACK 4` (6, 0) und `ACK 8` (7+8, 4). Cursor 1 wird für eine Figur ohne +8 gesetzt (Zeichenart 0): So leuchtet vorher kein einzelnes Pixel auf, und die Figur bringt den Eckpunkt mit. Nur für einen einzelnen Punkt bekommt `ACK 4` selbst das +8.
+
+Bei ACK 3 ist das Nibble direkt die Zeichenart: `ACK 3, 1` füllt die ganze Matrix in der aktiven Farbe, `ACK 3, 3` schaltet alle Pixel aus, ohne die Farben zu vergessen.
+
+**Palette** (für ACK 14, Farbnummer f):
+
+| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|
+| schwarz | rot | orange | gelb | grün | türkis | blau | violett |
+
+| 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+|---|---|---|---|---|---|---|---|
+| magenta | weiß | dunkelrot | dunkelgrün | dunkelblau | oliv | rosa | grau |
+
+Ein Userscript kann jede dieser Farben mit `setPalette(nummer, (r, g, b))` ändern.
+
+**Stapel (ACK 13):** Der ESP hat für die Farbmatrix und für die Bitmatrix je einen Stapel mit 8 Plätzen. Das Nibble w sagt, was passiert:
+
+| w | Wirkung |
+|---|---|
+| 1 / 2 / 3 | **push**: Farbmatrix / Bitmatrix / beide auf den Stapel legen |
+| 5 / 6 / 7 | **pop**: oberste Sicherung zurückholen und vom Stapel nehmen |
+| 9 / 10 / 11 | **peek**: oberste Sicherung zurückholen, sie bleibt auf dem Stapel |
+| 13 / 14 / 15 | Stapel leeren |
+
+Bit 0 steht für die Farbmatrix, Bit 1 für die Bitmatrix, die oberen beiden Bits für die Aktion (+0 push, +4 pop, +8 peek, +12 leeren). Ist ein Stapel voll, fällt beim nächsten push die älteste Sicherung heraus; pop und peek auf einen leeren Stapel ändern nichts. Pop und peek ändern nur die Matrix, die Anzeige bleibt zunächst, wie sie ist. Sichtbar wird das Ergebnis mit dem nächsten Neuaufbau, etwa dem nächsten Bild. [Film2090](https://github.com/rab-berlin/Film2090) legt am Start die Farben, die vorher ein Userscript gesetzt hat, auf den Stapel und holt sie nach jeder Szene mit peek zurück.
+
+**Zeitablauf:** Das erste Nibble kommt **direkt im nächsten Schritt** nach dem ACK. Der ESP liest es 14,2 ms nach dem ACK, das zweite 9,2 ms später.
+
+![Zeitablauf im Zeichenmodus](docs/bilder/matrix-zeichenmodus-zeit.svg)
+
+**Senderoutine:** Eine einzige Routine genügt für alle Befehle. Das ACK steht in R1, die Nibbles in R2 und R3:
+
+```
+cmd:   F02  DISOUT        Anzeige aus (Pflicht)
+warte: FD0  DIN R0        ┐ warten auf REQ
+       310  ANDI 1,R0     │
+       E..  BRZ warte     ┘
+       FE1  DOT R1        ACK
+       FE2  DOT R2        Nibble 1 (x bzw. Wert)
+       FE3  DOT R3        Nibble 2 (y); bei Befehlen mit einem Nibble ohne Bedeutung
+       100  MOVI 0,R0
+       FE0  DOT R0        Ausgänge auf 0
+       F07  RET
+```
+
+Für jeden Befehl gibt es dann einen kurzen Einsprung, der R1 setzt und zu `cmd` springt, zum Beispiel `punkt: 141 C..` (R1 = 4, `GOTO cmd`). Ein roter Punkt bei (3, 4) ist damit:
+
+```
+1E1  MOVI E,R1    ACK 14 = Farbe
+112  MOVI 1,R2    Farbe 1 = rot
+B..  CALL cmd
+1B2  MOVI B,R2    x = 3 + 8 (Zeichenart 1: Farbe und Pixel an)
+143  MOVI 4,R3    y = 4
+B..  CALL punkt
+```
+
+### Matrix-Farben aus einem Userscript
+
+Statt mit ACK 14 und Zeichenart 0 kann man die Farbmatrix auch von einem Userscript aus füllen: `setColors(liste)` erwartet 64 Farbnamen, oberste Zeile zuerst (`"schwarz"`, `"rot"`, `"orange"`, `"gelb"`, `"gruen"`, `"tuerkis"`, `"blau"`, `"violett"`, `"magenta"`, `"weiss"`). So macht es die BerlinUhr mit [farbmatrix.py](https://github.com/rab-berlin/BerlinUhr2090/blob/main/program/farbmatrix.py): Das Script setzt einmal die Farben und endet, danach schickt der 2090 nur noch Bilder im Blockmodus.
+
+### Beispiele für die Matrix
+
+| Programm | Was es zeigt |
+|---|---|
+| [demo_matrix](program/demo_matrix) | Vorführung aller Zeichenbefehle: Jede Taste am 2090 zeigt die nächste (ganze Matrix, Punkt, Rechteck, Rahmen, Ausschnitt aus- und einblenden, Linienzug, Schieben, Schlafen, Glitter, bunte Vielecke, Rahmen mit laufenden Farben, Regenbogen, Feuerwerk). 212 Befehle. |
+| [Film2090](https://github.com/rab-berlin/Film2090) | Ein kleiner Film mit farbigen Pixeln: Bilder im Blockmodus, Farben im Zeichenmodus mit Zeichenart 0. Nutzt alle 256 Befehle. |
+| [BerlinUhr2090](https://github.com/rab-berlin/BerlinUhr2090) | Die Berliner Mengenlehreuhr: Bilder im Blockmodus, Farben per Userscript. |
+| [Life2090](https://github.com/rab-berlin/Life2090) | Conways Game of Life: Bilder im Blockmodus. |
+
+demo_matrix liegt hier als kommentierte `.mic`-Datei; Film2090, BerlinUhr2090 und Life2090 haben eigene Repos mit ausführlicher Beschreibung.
+
+**So startest du ein Beispiel:** `.mic`-Datei mit **Upload** in der Weboberfläche zum 2090 übertragen, Programm auf dem 2090 starten, in der Weboberfläche **LED on** drücken.
+
+## Projekte mit dem ESP2090
 
 ### [Film2090](https://github.com/rab-berlin/Film2090)
 
