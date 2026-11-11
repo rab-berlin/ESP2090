@@ -492,6 +492,18 @@ demo_matrix liegt hier als kommentierte `.mic`-Datei; Film2090, BerlinUhr2090 un
 
 ### [Springer2090](https://github.com/rab-berlin/Springer2090)
 
+### [Pong2090](https://github.com/rab-berlin/Pong2090)
+
+### [Invaders2090](https://github.com/rab-berlin/Invaders2090)
+
+### [Mole2090](https://github.com/rab-berlin/Mole2090)
+
+### Läuft auch ohne ESP2090
+
+Diese Programme nutzen das ESP2090, wenn es da ist, laufen aber auch auf einem Microtronic ohne Erweiterung.
+
+#### [Blackjack2090](https://github.com/rab-berlin/Blackjack2090)
+
 ## Lizenz
 
-Alles hier ist frei: Schaltung, Platine, 3D-Druck-Dateien, Firmware, Programme und Texte. Jeder darf alles nachbauen, verändern, weitergeben und verwenden – auch kommerziell, ohne Nachfrage und ohne Namensnennung. Rechtlich steht das Projekt unter [CC0 1.0 Universal](LICENSE) (gemeinfrei).
+Alles hier ist frei: Schaltung, Platine, 3D-Druck-Dateien, Firmware, Programme und Texte. Jeder darf alles nachbauen, verändern, weitergeben und verwenden – auch kommerziell und ohne Nachfrage. Einzige Bedingung: Der Hinweis auf den Urheber (rab-berlin) und die Lizenz bleiben dabei erhalten. Rechtlich steht das Projekt unter der [MIT-Lizenz](LICENSE).
