@@ -10,6 +10,18 @@ Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emu
 
 ![Webscreen](/pics/ESP2090_Desktop.jpg)
 
+## Inhalt
+
+- [Materialliste (BOM)](#materialliste-bom)
+- [Warum nur, warum?](#warum-nur-warum)
+- [Schaltung](#schaltung) – [Stromversorgung](#stromversorgung)
+- [Schnellstart: Firmware installieren](#schnellstart-firmware-installieren)
+- [Was kann ich damit machen?](#was-kann-ich-damit-machen)
+- [Userscripts: der ESP2090 als Peripherie](#userscripts-der-esp2090-als-peripherie)
+- [Die LED-Matrix als Bildschirm](#die-led-matrix-als-bildschirm)
+- [Projekte mit dem ESP2090](#projekte-mit-dem-esp2090)
+- [Lizenz](#lizenz)
+
 
 ## Materialliste (BOM)
 
@@ -88,7 +100,22 @@ Jeder Ausgang des Microtronic ist an je zwei Eingänge eines 74HCT244 angeschlos
 
 Es ist zu beachten, dass der 74HCT244 maximal 20 mA an seinen Ausgängen liefert. Mehr sollte man auch dem Microtronic niemals abverlangt haben, wenn man seine Ausgänge nicht überlasten wollte - laut Anleitungsbuch 2. Teil, S. 41: "maximal 15 mA". Wer mehr will oder braucht, steuert mit dem Ausgang wie üblich erstmal einen Transistor an.
 
-**Reihenfolge beim Einschalten:** Ist der ESP stromlos, der Microtronic aber eingeschaltet, fließen je Ausgang des 74HCT244 etwa 4 mA Richtung ESP. Dadurch leuchtet sogar die LED auf dem ESP32-C3. Das ist nur kosmetisch und schadet nicht, denn die Ausgänge dürfen bis 15 mA liefern. Am besten aber immer **zuerst den ESP einschalten** – dann sind alle Verbindungen hochohmig.
+### Stromversorgung
+
+Das ESP2090-Studio bekommt seine 5 Volt über die USB-C-Buchse des ESP32-C3 SuperMini – entweder vom PC oder von einem USB-Netzteil (5 V, Typ C). Von dort laufen sie über den 5V-Pin des SuperMini zu den ICs, den Levelshiftern und der LED-Matrix. Vom Microtronic kommt kein Strom: Mit ihm sind nur die Masse und die Signalleitungen verbunden, der 2090 behält seine eigene Versorgung.
+
+Der größte Verbraucher ist die LED-Matrix. 64 LEDs in voller Helligkeit (weiß) würden bis zu 3,8 A ziehen – das schafft weder ein PC-Port (500 mA bei USB 2.0, 900 mA bei USB 3) noch die Leiterbahnen des SuperMini. Die Firmware begrenzt deshalb den Strom der Matrix (`LED_MAX_MA = 250` in `main.py`). Das reicht auch am PC-Port. Mit eigenem Netzteil ab 2 A kann man den Wert bis etwa 1000 erhöhen. Ist der PC angeschlossen, hängt übrigens die Masse des 2090 über das ESP2090 an der PC-Masse – in der Regel kein Problem, aber gut zu wissen.
+
+**Reihenfolge beim Einschalten:** Ist der ESP stromlos, der Microtronic aber eingeschaltet, fließen je Ausgang des 74HCT244 etwa 4 mA Richtung ESP. Dadurch leuchtet sogar die LED auf dem ESP32-C3. Das ist nur kosmetisch und schadet nicht, denn die Ausgänge dürfen bis 15 mA liefern. Am besten aber immer **zuerst den ESP einschalten**, dann den 2090 – dann sind alle Verbindungen hochohmig. Beim Ausschalten umgekehrt.
+
+## Schnellstart: Firmware installieren
+
+Die ausführliche Anleitung mit Fehlersuche steht in [firmware/ANLEITUNG.txt](firmware/ANLEITUNG.txt), die Funktionen für Userscripts in [firmware/README.md](firmware/README.md). In Kürze:
+
+1. **MicroPython flashen** (einmalig): [Thonny](https://thonny.org) installieren, ESP per USB-C anschließen (ein Datenkabel, kein reines Ladekabel). Unter *Werkzeuge → Optionen → Interpreter* „MicroPython (ESP32)“ wählen und *MicroPython installieren* mit Familie und Variante **ESP32-C3**. Erprobt mit MicroPython 1.27.0 und 1.29.0. Wird der ESP nicht erkannt: BOOT-Taste beim Einstecken gedrückt halten.
+2. **WLAN eintragen:** `wifi.json.beispiel` als `wifi.json` kopieren und WLAN-Name und Passwort eintragen. Ohne diese Datei öffnet der ESP ein eigenes WLAN „ESP32-Setup“ (Passwort 12345678), dort unter http://192.168.4.1 das WLAN auswählen.
+3. **Dateien kopieren:** In Thonny (*Ansicht → Dateien*) aus dem Ordner `firmware` diese Dateien **und den Ordner `userscripts`** auf den ESP hochladen: `boot.py`, `hw.py`, `main.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py` sowie die eigene `wifi.json`. Vorher in `webrepl_cfg.py` das WebREPL-Passwort ändern.
+4. **Starten:** RST am ESP drücken. In der Thonny-Shell erscheint die IP-Adresse, dann im Browser **http://&lt;IP-Adresse&gt;:8080** öffnen (das `:8080` nicht vergessen).
 
 ## Was kann ich damit machen?
 
@@ -459,3 +486,12 @@ demo_matrix liegt hier als kommentierte `.mic`-Datei; Film2090, BerlinUhr2090 un
 
 ### [Life2090](https://github.com/rab-berlin/Life2090)
 
+### [Microtris2090](https://github.com/rab-berlin/Microtris2090)
+
+### [Snake2090](https://github.com/rab-berlin/Snake2090)
+
+### [Springer2090](https://github.com/rab-berlin/Springer2090)
+
+## Lizenz
+
+Alles hier ist frei: Schaltung, Platine, 3D-Druck-Dateien, Firmware, Programme und Texte. Jeder darf alles nachbauen, verändern, weitergeben und verwenden – auch kommerziell, ohne Nachfrage und ohne Namensnennung. Rechtlich steht das Projekt unter [CC0 1.0 Universal](LICENSE) (gemeinfrei).
