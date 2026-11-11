@@ -500,7 +500,7 @@ demo_matrix liegt hier als kommentierte `.mic`-Datei; Film2090, BerlinUhr2090 un
 
 ### Läuft auch ohne ESP2090
 
-Diese Programme nutzen das ESP2090, wenn es da ist, laufen aber auch auf einem Microtronic ohne Erweiterung.
+Diese Programme laufen auf einem Microtronic ohne jede Erweiterung und brauchen nichts vom ESP2090. Nützlich ist es trotzdem: Mit **Upload** in der Weboberfläche ist das Programm in Sekunden im 2090, statt 256 Programmschritte von Hand einzutippen – auch wenn Letzteres natürlich das richtige 80er-Jahre-Gefühl erzeugt.
 
 #### [Blackjack2090](https://github.com/rab-berlin/Blackjack2090)
 
