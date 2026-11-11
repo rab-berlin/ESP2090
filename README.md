@@ -174,7 +174,13 @@ Vor dem Start prüft der ESP das Script und startet es nicht, wenn eine `while`-
 
 Zu jedem Beispiel gehört ein Programm für den 2090 (`.mic`, ausführlich kommentiert, zum Hochladen mit **Upload**) und ein Userscript (`.py`). Die Programme sind kurz genug, um sie auch von Hand einzutippen.
 
-**So startest du ein Beispiel:** Den Inhalt der `.py`-Datei in den Editor der Weboberfläche kopieren, unter einem Namen speichern (z. B. `ton.py`) und mit **Run** starten. Dann das Programm zum 2090 übertragen und dort starten. Die Matrix muss dabei aus sein.
+**So startest du ein Beispiel:**
+
+1. Den Inhalt der `.py`-Datei in den Editor der Weboberfläche kopieren und unter einem Namen speichern (z. B. `ton.py`) – noch **nicht** starten.
+2. Das Programm (`.mic`) mit **Upload** zum 2090 übertragen.
+3. Erst jetzt das Userscript mit **Run** und das Programm auf dem 2090 starten.
+
+Die Reihenfolge ist wichtig: Der Upload benutzt dieselben Ein- und Ausgänge wie Userscript und Programm. Deshalb nie hochladen, während schon ein Userscript oder ein Programm auf dem 2090 läuft. Die Matrix muss dabei aus sein.
 
 #### Lauflicht – nur der ESP
 
