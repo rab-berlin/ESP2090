@@ -127,16 +127,6 @@ Die ernüchternde Antwort: natürlich nicht alles, weil der Programmspeicher des
 
 Der Spaß liegt wie immer darin, mit diesen Einschränkungen eben doch etwas zu schaffen, das "sinnvoll" und funktional ist.
 
-### Protokolle 
-
-Wenn du bisher noch nie etwas mit Protokollen zu tun haben wolltest (hast du aber, weil du gerade im Internet unterwegs bist) - jetzt solltest du damit anfangen, wenn du dem Microtronic die _Welt der Dinge_ zugänglich machen willst.
-
-Ein Protokoll ist nichts weiter als eine Verabredung: Wer legt wann welches Nibble auf die Leitungen, und woran erkennt der andere, dass er es lesen darf? Der Microtronic hat vier Ausgänge und vier Eingänge, mehr nicht – aber das reicht für erstaunlich viel. Das ESP2090-Studio bietet dafür zwei Wege:
-
-- **Userscripts in Python.** Ein kleines Programm auf dem ESP wartet auf Daten an den Ausgängen des Microtronic und/oder legt etwas auf seine Eingänge – nach einem Protokoll, das du selbst festlegst (Nibblefolgen, Anfrage und Antwort, Timing). Beispiele: ein Klavier mit dem Buzzer, ein Zähler mit den Tasten der Weboberfläche und echte Zufallszahlen für den 2090. → [Userscripts](#userscripts-der-esp2090-als-peripherie)
-
-- **Die LED-Matrix als Bildschirm.** Ein Sonderfall, fest in die Firmware eingebaut: Der Microtronic schickt entweder ganze Bilder (16 Register, „Blockmodus“) oder kurze Zeichenbefehle für Punkt, Rechteck, Rahmen, Linie, Farbe und Schieben („Zeichenmodus“). Weil das Timing hier auf die Millisekunde stimmen muss, ist das Protokoll genau beschrieben – mit Bildern und Beispielprogrammen. → [LED-Matrix](#die-led-matrix-als-bildschirm)
-
 ## Userscripts: der ESP2090 als Peripherie
 
 Ein Userscript ist ein kleines Python-Programm, das auf dem ESP2090 läuft und mit dem Microtronic über dessen Ein- und Ausgänge spricht. Du schreibst es im Editor der Weboberfläche, speicherst es im Ordner `userscripts` auf dem ESP und startest es mit **Run** (und beendest es mit **Stop**). Ein Neuflashen der Firmware ist dafür nie nötig.
@@ -156,7 +146,9 @@ Wert 1 ist jeweils Ein- bzw. Ausgang 1, Wert 8 Ein- bzw. Ausgang 4. Die original
 
 ### Protokolle: Nibbles und Zeit
 
-Zwischen den beiden laufen nur 4 Bit in jede Richtung, und keiner kann dem anderen „Bescheid sagen“, außer über genau diese Leitungen. Damit trotzdem nichts verloren geht, verabreden das Programm im 2090 und das Userscript eine Reihenfolge – ein **Protokoll**. Zwei Muster reichen für sehr vieles:
+Wenn du bisher noch nie etwas mit Protokollen zu tun haben wolltest (hast du aber, weil du gerade im Internet unterwegs bist) – jetzt solltest du damit anfangen, wenn du dem Microtronic die _Welt der Dinge_ zugänglich machen willst.
+
+Ein Protokoll ist nichts weiter als eine Verabredung: Wer legt wann welches Nibble auf die Leitungen, und woran erkennt der andere, dass er es lesen darf? Der Microtronic hat vier Ausgänge und vier Eingänge, mehr nicht – aber das reicht für erstaunlich viel. Zwischen ihm und dem ESP laufen also nur 4 Bit in jede Richtung, und keiner kann dem anderen „Bescheid sagen“, außer über genau diese Leitungen. Damit trotzdem nichts verloren geht, verabreden das Programm im 2090 und das Userscript eine Reihenfolge – eben ein **Protokoll**. Die LED-Matrix ist ein Sonderfall mit einem fest eingebauten Protokoll, sie hat [einen eigenen Abschnitt](#die-led-matrix-als-bildschirm). Für Userscripts reichen zwei Muster für sehr vieles:
 
 **1. Nur in eine Richtung.** Einer legt einen Wert an, der andere schaut regelmäßig nach. Damit das klappt, muss der Wert lange genug anliegen. Das Userscript schaut in den Beispielen alle 5 ms nach, der 2090 braucht für einen Befehl etwa 9,3 ms (mit eingeschalteter Anzeige länger). Ein Wert, den der 2090 für vier oder fünf Befehle stehen lässt, kommt also sicher an. Umgekehrt sollte das Userscript einen Wert so lange halten, bis der 2090 ihn gelesen hat – oder deutlich länger, als die Leseschleife im 2090 braucht.
 
