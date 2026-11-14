@@ -1,6 +1,6 @@
 @echo off
 REM ESP2090 Studio - Dateien per mpremote auf den ESP32-C3 kopieren
-REM Voraussetzung: MicroPython ist bereits geflasht (siehe ANLEITUNG.txt)
+REM Voraussetzung: MicroPython ist bereits geflasht (siehe ANLEITUNG.md)
 REM und mpremote ist installiert:  pip install mpremote
 
 cd /d "%~dp0"

@@ -23,12 +23,32 @@ def setOutputs(value):
     value >>= 1
     out_4.value(value & 1)
     
+# Der 2090 schaltet seine Ausgaenge bei DOT nacheinander (ca. 140-170 us).
+# getInputs() liest alle vier in einem Zugriff und so lange erneut, bis zwei
+# Lesungen im Abstand von INPUT_SETTLE_US gleich sind - also nie einen Zwischenwert.
+INPUT_SETTLE_US = 200
+
 def getInputs():
-    value = 0
-    for i, pin in enumerate (INPUTS):
-        bit = pin.value() & 1
-        value |= bit << i
-    return value
+    v = (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111
+    while True:
+        time.sleep_us(INPUT_SETTLE_US)
+        w = (machine.mem32[GPIO_IN_REG] >> 5) & 0b1111
+        if w == v:
+            return v
+        v = w
+
+async def waitInputs(value=None, timeout_ms=None):
+    """Warten, bis die Ausgaenge des 2090 den Wert `value` zeigen (ohne value:
+    bis sich der Wert aendert). Gibt den Wert zurueck, bei Timeout None."""
+    start = time.ticks_ms()
+    old = getInputs()
+    while True:
+        v = getInputs()
+        if (v == value) if value is not None else (v != old):
+            return v
+        if timeout_ms is not None and time.ticks_diff(time.ticks_ms(), start) >= timeout_ms:
+            return None
+        await asyncio.sleep_ms(5)
 
 # ================= LED MATRIX =================
 # Matrix-Protokoll v2 (siehe Matrix-Protokoll.md):
@@ -138,9 +158,29 @@ def start_matrix_tasks():
     log("LED task started")
     matrix_asleep = False
     matrix_display_task_handle = asyncio.create_task(matrix_display_task())
-    matrix_task_handle = asyncio.create_task(matrix_task())
+    matrix_task_handle = asyncio.create_task(matrix_task_guarded())
     matrix_tasks_running = True
     
+
+async def matrix_task_guarded():
+    # Bricht matrix_task mit einem Fehler ab, soll die Oberflaeche nicht weiter
+    # "LED on" zeigen: Fehler ins Log, Anzeige-Task beenden, Zustand zuruecksetzen.
+    # matrix_task selbst bleibt unveraendert (zeitkritisch).
+    global matrix_display_task_handle, matrix_task_handle, matrix_tasks_running, matrix_asleep
+    try:
+        await matrix_task()
+    except asyncio.CancelledError:
+        raise
+    except Exception as e:
+        out_1.value(0)   # REQ Low
+        if matrix_display_task_handle:
+            matrix_display_task_handle.cancel()
+            matrix_display_task_handle = None
+        matrix_task_handle = None
+        matrix_tasks_running = False
+        matrix_asleep = False
+        log("LED task error: {} - matrix stopped".format(exception_text(e)))
+
 
 def stop_matrix_tasks():
     global matrix_display_task_handle, matrix_task_handle, matrix_tasks_running, matrix_asleep
@@ -160,7 +200,18 @@ def stop_matrix_tasks():
 
     matrix_tasks_running = False
     matrix_asleep = False
+    matrix_clear()
     log("LED task stopped")
+
+
+def matrix_clear():
+    # LED off: Bitmatrix, Farbmatrix, Stapel, Cursor und aktive Farbe zuruecksetzen
+    # (Palette bleibt) und die Anzeige sofort dunkel schalten. "LED on" loescht nicht,
+    # damit Farben aus einem Userscript (setColors) erhalten bleiben.
+    global matrix_dirty
+    M.clear()
+    matrix_dirty = True
+    matrix_show()
 
 
 def setColors(user_colors):
@@ -553,6 +604,46 @@ def script_problem(code):
 
 # ================= USER SCRIPT =================
 
+USER_LINE_OFFSET = 3     # Zeilen vor dem Script in run_user_script (Leerzeile, import, async def)
+
+def _traceback_text(e):
+    try:
+        from sys import print_exception       # MicroPython
+        import io
+        buf = io.StringIO()
+        print_exception(e, buf)
+        return buf.getvalue()
+    except ImportError:
+        import traceback                      # CPython (Simulation)
+        return "".join(traceback.format_exception(type(e), e, e.__traceback__))
+
+def exception_text(e):
+    """Fehlerart und Text, z. B. "NameError: name 'x' isn't defined"."""
+    text = str(e)
+    return type(e).__name__ + (": " + text if text else "")
+
+def script_error_line(e):
+    """Zeile im Userscript (wie im Editor), in der der Fehler auftrat, sonst None."""
+    line = None
+    if isinstance(e, SyntaxError) and getattr(e, "lineno", None):
+        line = e.lineno
+    else:
+        tb = _traceback_text(e)
+        mark = '"<string>", line '
+        p = tb.rfind(mark)
+        if p >= 0:
+            digits = ""
+            for c in tb[p + len(mark):]:
+                if not c.isdigit():
+                    break
+                digits += c
+            if digits:
+                line = int(digits)
+    if line is None:
+        return None
+    line -= USER_LINE_OFFSET
+    return line if line >= 1 else None
+
 def indent(txt,n):
     return "\n".join(" "*n + line for line in txt.split("\n"))
 
@@ -572,6 +663,7 @@ async def __user_task():
             "in_1":in_1,"in_2":in_2,"in_3":in_3,"in_4":in_4,
             "setOutputs":setOutputs,
             "getInputs": getInputs,
+            "waitInputs": waitInputs,
             "tasteG":tasteG,
             "tasteH":tasteH,
             "log":log,
@@ -592,7 +684,10 @@ async def __user_task():
         log("User script stopped")
 
     except Exception as e:
-        log("ERROR "+str(e))
+        line = script_error_line(e)
+        if line:
+            line = min(line, code.count("\n") + 1)   # Syntaxfehler am Dateiende (z. B. offene Klammer)
+        log("ERROR " + ("line {}: ".format(line) if line else "") + exception_text(e))
 
     setOutputs(0)   # auch nach normalem Ende oder Fehler
     gc.collect()
@@ -708,6 +803,13 @@ async def busch_upload(req):
         return "Too many instructions ({}), the 2090 has {} program steps".format(
             len(instr), MIC_MAX_STEPS), 400
 
+    # Der Upload benutzt dieselben Leitungen: laufendes Userscript und Matrix vorher stoppen
+    if stop_user_script():
+        log("User script stopped for upload")
+    if matrix_tasks_running:
+        stop_matrix_tasks()
+        log("LED matrix stopped for upload")
+
     send_busch_instructions(instr)    # synchron, zeitkritisch (ca. 130 ms pro Befehl)
 
     return "MIC transfer done ({} instructions)".format(len(instr))
@@ -718,9 +820,11 @@ buzzer_pwm = PWM(Pin(BUZZER_PIN))
 buzzer_pwm.duty_u16(0)
 
 beep_queue = []
+BEEP_QUEUE_MAX = 32     # mehr Toene warten nicht; weitere beep() werden ignoriert
 
 def beep(freq, duration_ms=None):
-    beep_queue.append((freq, duration_ms))
+    if len(beep_queue) < BEEP_QUEUE_MAX:
+        beep_queue.append((freq, duration_ms))
 
 def stop_sound():
     beep_queue.clear()
@@ -823,19 +927,20 @@ async def run(req):
 
     return "Started "+name
 
-@app.get('/stop')
-async def stop(req):
-
+def stop_user_script():
+    """Laufendes Userscript abbrechen, Ausgaenge 0, Ton aus. True, wenn eins lief."""
     global current_task
-
     if current_task:
         current_task.cancel()
         current_task=None
         setOutputs(0)
         stop_sound()
-        return "Stopped"
+        return True
+    return False
 
-    return "No script"
+@app.get('/stop')
+async def stop(req):
+    return "Stopped" if stop_user_script() else "No script"
 
 
 # ================= LIST PY FILES =================
@@ -964,11 +1069,86 @@ async def wifi_task():
         except Exception as e:
             print("WiFi reconnect error:", e)
 
+# ================= AUTOSTART =================
+# autostart.json: {"script": "userscripts/x.py", "led": true}. Fehlt die Datei,
+# startet nichts automatisch. Nach AUTOSTART_DELAY_MS: erst LED, dann Script
+# (mit derselben Pruefung wie Run).
+AUTOSTART_FILE = "autostart.json"
+AUTOSTART_DELAY_MS = 2000
+
+def autostart_config():
+    try:
+        with open(AUTOSTART_FILE) as f:
+            cfg = json.load(f)
+    except (OSError, ValueError):
+        cfg = {}
+    script = cfg.get("script") or ""
+    return {"script": script if is_userscript(script) else "", "led": bool(cfg.get("led"))}
+
+def autostart_save(cfg):
+    if not cfg["script"] and not cfg["led"]:
+        try:
+            os.remove(AUTOSTART_FILE)
+        except OSError:
+            pass
+        return
+    with open(AUTOSTART_FILE, "w") as f:
+        json.dump(cfg, f)
+
+@app.get("/autostart")
+async def autostart_get(req):
+    return autostart_config()
+
+# Aendern per POST: ?script=userscripts/x.py (leer = kein Script) und/oder ?led=0|1
+@app.post("/autostart")
+async def autostart_set(req):
+    cfg = autostart_config()
+    script = req.args.get("script")
+    if script is not None:
+        if script and not is_userscript(script):
+            return "Autostart: only .py files in userscripts/ allowed", 400
+        cfg["script"] = script
+    led = req.args.get("led")
+    if led in ("0", "1"):
+        cfg["led"] = led == "1"
+    try:
+        autostart_save(cfg)
+    except OSError as e:
+        return "Autostart not saved: " + str(e), 500
+    return cfg
+
+async def autostart_task():
+    cfg = autostart_config()
+    if not cfg["script"] and not cfg["led"]:
+        return
+    await asyncio.sleep_ms(AUTOSTART_DELAY_MS)
+    if cfg["led"] and not matrix_tasks_running:
+        log("Autostart: LED matrix")
+        start_matrix_tasks()
+    name = cfg["script"]
+    if not name:
+        return
+    if current_task and not current_task.done():
+        return                              # inzwischen von Hand gestartet
+    try:
+        with open(name) as f:
+            code = f.read()
+    except OSError:
+        log("Autostart: file not found: " + name)
+        return
+    problem = script_problem(code)
+    if problem:
+        log("Autostart: not started: " + problem)
+        return
+    log("Autostart: " + name)
+    asyncio.create_task(run_user_script(code))
+
 # ================= MAIN =================
 async def main_task():
 
     asyncio.create_task(buzzer_play_task())
     asyncio.create_task(wifi_task())
+    asyncio.create_task(autostart_task())
     #asyncio.create_task(matrix_display_task())
     #asyncio.create_task(matrix_task())
 

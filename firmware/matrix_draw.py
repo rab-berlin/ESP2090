@@ -69,6 +69,10 @@ STACK_MAX = 8                       # Plaetze je Stapel (ACK 13)
 class Matrix:
     def __init__(self):
         self.palette = list(PALETTE_DEFAULT)
+        self.clear()
+
+    def clear(self):
+        """Zustand wie nach dem Einschalten; nur die Palette (setPalette) bleibt."""
         self.bits = bytearray(N)
         self.colors = bytearray([1] * N)    # alles rot
         self.c1x = self.c1y = 0
