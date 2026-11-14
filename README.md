@@ -196,12 +196,13 @@ Die Reihenfolge ist wichtig: Der Upload benutzt dieselben Ein- und Ausgänge wie
 
 #### Lauflicht – nur der ESP
 
-[firmware/userscripts/beispiel_lauflicht.py](firmware/userscripts/beispiel_lauflicht.py) liegt schon auf dem ESP. Es schaltet die Eingänge des 2090 im Halbsekundentakt nacheinander ein (Wert 1, 2, 4, 8). Gut zum Ausprobieren, ob alles verbunden ist. Sichtbar wird es mit drei Befehlen auf dem 2090, die die Eingänge laufend anzeigen:
+[firmware/userscripts/beispiel_lauflicht.py](firmware/userscripts/beispiel_lauflicht.py) liegt schon auf dem ESP. Es schaltet die Eingänge des 2090 im Halbsekundentakt nacheinander ein (Wert 1, 2, 4, 8). Gut zum Ausprobieren, ob alles verbunden ist. Mit vier Befehlen auf dem 2090 wird daraus ein echtes Lauflicht: Er liest die Eingänge laufend, zeigt den Wert an und legt ihn auf seine Ausgänge – die LEDs der Ausgänge laufen mit:
 
 ```
 00  F10  DISP 1,R0
 01  FD0  DIN R0
-02  C01  GOTO 01
+02  FE0  DOT R0
+03  C01  GOTO 01
 ```
 
 #### Ton – der 2090 als Klavier (eine Richtung: 2090 → ESP)
