@@ -130,7 +130,7 @@ Der Spaß liegt wie immer darin, mit diesen Einschränkungen eben doch etwas zu 
 
 ## Userscripts: der ESP2090 als Peripherie
 
-Ein Userscript ist ein kleines Python-Programm, das auf dem ESP2090 läuft und mit dem Microtronic über dessen Ein- und Ausgänge spricht. Du schreibst es im Editor der Weboberfläche, speicherst es im Ordner `userscripts` auf dem ESP und startest es mit **Run** (und beendest es mit **Stop**). Ein Neuflashen der Firmware ist dafür nie nötig.
+Ein Userscript ist ein kleines Python-Programm, das auf dem ESP2090 läuft und mit dem Microtronic über dessen Ein- und Ausgänge spricht. Du schreibst es im Editor der Weboberfläche oder holst es mit **PC…** von deinem Rechner. **Save** speichert es im Ordner `userscripts` auf dem ESP, **Run** speichert ebenfalls und startet es, **Stop** beendet es. Ein Neuflashen der Firmware ist dafür nie nötig.
 
 Welche Funktionen ein Userscript benutzen kann (`setOutputs`, `getInputs`, `beep`, `log`, `tasteG` …), steht in der [Beschreibung der Firmware](firmware/README.md).
 
@@ -158,7 +158,7 @@ Ein Protokoll ist nichts weiter als eine Verabredung: Wer legt wann welches Nibb
 Ein paar Hinweise aus der Praxis:
 
 - **Nicht auf feste Zeiten bauen.** Mit eingeschalteter Anzeige ist der 2090 langsamer, und auch der ESP hat nebenbei zu tun (Webserver). Lieber warten, bis sich etwas ändert, als eine bestimmte Zeit abzuzählen. Feste Zeiten braucht nur die [LED-Matrix](#die-led-matrix-als-bildschirm), die deshalb in der Firmware eingebaut ist.
-- **Ausgänge schalten nacheinander.** Ein `DOT` des 2090 schaltet die vier Ausgänge nicht gleichzeitig, sondern nacheinander: Nach der ersten erkennbaren Änderung dauert es noch etwa 138 µs (auf high) bzw. 166 µs (auf low), bis der Wert vollständig anliegt (Bild im Abschnitt [Wie die Übertragung abläuft](#wie-die-übertragung-abläuft)). Wer genau dann liest, bekommt einen Zwischenwert. Wo es darauf ankommt: nach einer Änderung kurz warten (1 ms) und noch einmal lesen.
+- **Ausgänge schalten nacheinander.** Ein `DOT` des 2090 schaltet die vier Ausgänge nicht gleichzeitig, sondern nacheinander: Nach der ersten erkennbaren Änderung dauert es noch etwa 138 µs (auf high) bzw. 166 µs (auf low), bis der Wert vollständig anliegt (Bild im Abschnitt [Wie die Übertragung abläuft](#wie-die-übertragung-abläuft)). Wer genau dann liest, bekommt einen Zwischenwert. `getInputs()` fängt das ab: Es liest alle vier Ausgänge auf einmal und so lange erneut, bis zwei Lesungen im Abstand von 0,2 ms gleich sind. Wer stattdessen `in_1` … `in_4` einzeln abfragt, muss selbst nach einer Änderung kurz warten und noch einmal lesen.
 - **Ruhezustand 0.** Wenn alle Ausgänge auf 0 stehen, „sagt niemand etwas“. Wer einen Wert gesendet hat, setzt am Ende wieder 0.
 - **Matrix und Userscript nicht gleichzeitig an denselben Leitungen.** Die LED-Matrix benutzt Eingang 1 (Anfrage) und alle vier Ausgänge. Wer die Matrix eingeschaltet hat („LED on“), sollte kein Userscript laufen lassen, das ebenfalls darauf hört oder Eingang 1 setzt.
 
@@ -169,7 +169,15 @@ Userscripts laufen neben Webserver und Matrix auf demselben kleinen Prozessor. D
 - In jeder Schleife `await asyncio.sleep_ms(...)` verwenden, nie `time.sleep`.
 - Kein `input()`.
 
-Vor dem Start prüft der ESP das Script und startet es nicht, wenn eine `while`- oder `for`-Schleife kein `await` enthält (Ausnahme: `for ... in range(n)` mit einer festen Zahl bis 64). Beim Speichern erscheint schon eine Warnung. Nach dem Ende oder bei **Stop** werden die Ausgänge auf 0 gesetzt und ein Ton beendet.
+Vor dem Start prüft der ESP das Script und startet es nicht, wenn eine `while`- oder `for`-Schleife kein `await` enthält (Ausnahme: `for ... in range(n)` mit einer festen Zahl bis 64). Beim Speichern erscheint schon eine Warnung. Nach dem Ende oder bei **Stop** werden die Ausgänge auf 0 gesetzt und ein Ton beendet. Läuft ein Script auf einen Fehler, steht im Log, in welcher Zeile und welcher Art er ist, z. B. `ERROR line 12: NameError: name 'x' isn't defined`.
+
+Zum Warten auf den 2090 gibt es eine fertige Hilfe: `await waitInputs(wert, timeout_ms)` wartet, bis die Ausgänge des 2090 den Wert zeigen – ohne Wert, bis sich etwas ändert. Bei Timeout kommt `None` zurück. So muss man die Warteschleife mit `await` nicht selbst schreiben.
+
+### Autostart
+
+Unter **Controls** in der Weboberfläche lassen sich zwei Häkchen setzen: **Autostart LED** schaltet die Matrix nach dem Einschalten ein, **Autostart script** startet das Script, dessen Name gerade im Editor steht. Beides wird sofort auf dem ESP gespeichert. Nach dem Einschalten wartet der ESP zwei Sekunden, dann startet er erst die Matrix und danach das Script – mit derselben Prüfung wie bei **Run**. So läuft zum Beispiel die BerlinUhr, ohne dass man jedes Mal die Weboberfläche öffnen muss.
+
+Macht ein Autostart-Script Probleme, hilft Thonny: Beim Verbinden unterbricht es die Firmware, dann die Datei `autostart.json` auf dem ESP löschen.
 
 ### Beispiele für Userscripts
 
@@ -181,7 +189,7 @@ Zu jedem Beispiel gehört ein Programm für den 2090 (`.mic`, ausführlich komme
 2. Das Programm (`.mic`) mit **Upload** zum 2090 übertragen.
 3. Erst jetzt das Userscript mit **Run** und das Programm auf dem 2090 starten.
 
-Die Reihenfolge ist wichtig: Der Upload benutzt dieselben Ein- und Ausgänge wie Userscript und Programm. Deshalb nie hochladen, während schon ein Userscript oder ein Programm auf dem 2090 läuft. Die Matrix muss dabei aus sein.
+Die Reihenfolge ist wichtig: Der Upload benutzt dieselben Ein- und Ausgänge wie Userscript und Programm. Ein laufendes Userscript und die Matrix stoppt der Upload deshalb vorher selbst. Ob auf dem 2090 gerade ein Programm läuft, kann der ESP aber nicht sehen – also nie hochladen, während dort eins läuft. Die Matrix muss beim Ausprobieren der Beispiele aus sein.
 
 #### Lauflicht – nur der ESP
 
@@ -493,7 +501,7 @@ Das funktioniert nur, wenn alle mitspielen. Ein Task, der nie abgibt, legt alles
 
 ### Userscripts als Task
 
-Ein Userscript ist für den ESP einfach Text. Beim Start verpackt die Firmware diesen Text in eine `async`-Funktion, übersetzt ihn mit `exec` und startet ihn als Task, gleichrangig neben Webserver, Matrix, Buzzer und WLAN. Darum kann man im Script direkt `await` schreiben, ohne selbst eine Funktion anzulegen. Das Script sieht nur, was die Firmware ihm mitgibt: `setOutputs`, `getInputs`, `beep`, `log`, die Web-Taster, die Matrix-Funktionen. **Stop** bricht den Task ab. Danach setzt die Firmware die Ausgänge auf 0 und schaltet den Ton aus.
+Ein Userscript ist für den ESP einfach Text. Beim Start verpackt die Firmware diesen Text in eine `async`-Funktion, übersetzt ihn mit `exec` und startet ihn als Task, gleichrangig neben Webserver, Matrix, Buzzer und WLAN. Darum kann man im Script direkt `await` schreiben, ohne selbst eine Funktion anzulegen. Das Script sieht nur, was die Firmware ihm mitgibt: `setOutputs`, `getInputs`, `waitInputs`, `beep`, `log`, die Web-Taster, die Matrix-Funktionen. **Stop** bricht den Task ab. Danach setzt die Firmware die Ausgänge auf 0 und schaltet den Ton aus.
 
 ### Warum Microdot?
 
@@ -506,7 +514,7 @@ Speicher ist auf dem C3 knapp, und das merkt man an zwei Stellen. Die Webseite w
 Zwei Aufgaben halten sich bewusst nicht an „regelmäßig abgeben“, weil sie auf die Millisekunde genau sein müssen:
 
 - **LED-Matrix:** Während ein Bild ankommt, rund 160 ms im Blockmodus, liest der Matrix-Task die Nibbles im festen Takt und gibt so lange nicht ab. Die Ausgänge des 2090 liest er dabei direkt aus dem GPIO-Register des ESP, alle vier in einem einzigen Zugriff. So gibt es keine Zwischenwerte. Erst nach dem Bild kommen die anderen Tasks dran. Bei laufender Matrix antwortet die Weboberfläche deshalb etwas träger.
-- **Upload zum 2090:** Das Programm geht Bit für Bit über die Eingänge des 2090, so wie früher vom Kassetteninterface 2095. Das dauert etwa 130 ms pro Befehl, bei 256 Befehlen also gut eine halbe Minute. In dieser Zeit tut der ESP nichts anderes. Deshalb gilt: erst hochladen, dann Userscript und Programm starten.
+- **Upload zum 2090:** Das Programm geht Bit für Bit über die Eingänge des 2090, so wie früher vom Kassetteninterface 2095. Das dauert etwa 130 ms pro Befehl, bei 256 Befehlen also gut eine halbe Minute. In dieser Zeit tut der ESP nichts anderes. Ein laufendes Userscript und die Matrix stoppt der Upload deshalb vorher selbst. Trotzdem gilt: erst hochladen, dann Userscript und Programm starten.
 
 ### Ohne WLAN
 

@@ -16,7 +16,7 @@ Die WLAN-Zugangsdaten stehen in **wifi.json** (Vorlage: `wifi.json.beispiel`). F
 
 **Wichtig:** Auf dem ESP32 muss der Ordner **userscripts** existieren – er enthält die Python-Skripte, die zur Laufzeit geladen und gestartet werden. Ohne ihn funktionieren Speichern, Laden und die Dateiliste in der Weboberfläche nicht. Beim Hochladen mit Thonny also den Ordner `userscripts` mit auswählen.
 
-Die Weboberfläche läuft auf Port 8080: `http://<IP-Adresse>:8080`. Links der Editor für User-Skripte, in der Mitte das Log und die Web-Taster G/H, rechts die LED-Matrix (live) mit den Knöpfen für Matrix an/aus, MIC-Upload zum 2090 und ESP-Reset.
+Die Weboberfläche läuft auf Port 8080: `http://<IP-Adresse>:8080`. Links der Editor für User-Skripte (Save/Load auf dem ESP, **PC…** lädt ein Skript vom PC in den Editor, **Run** speichert und startet), in der Mitte das Log und die Web-Taster G/H, rechts die LED-Matrix (live) mit den Knöpfen für Matrix an/aus, MIC-Upload zum 2090 (stoppt vorher Userscript und Matrix), Autostart (Matrix und/oder ein Skript nach dem Einschalten, gespeichert in `autostart.json`) und ESP-Reset.
 
 In User-Skripten kann auf folgende Objekte und Funktionen des ESP2090-Studios zugegriffen werden:
 
@@ -24,9 +24,10 @@ In User-Skripten kann auf folgende Objekte und Funktionen des ESP2090-Studios zu
 - Eingänge des ESP (**in_1** bis **in_4**) - damit werden die Ausgänge des Microtronic gelesen
 - Objekte **tasteG** und **tasteH** - die entsprechenden Buttons auf der Weboberfläche (`tasteG["pressed"]`)
 - Funktion **setOutputs(wert)** - setzt out_1 bis out_4 auf den binären Wert des Aufruf-Parameters
-- Funktion **getInputs()** - liest in_1 bis in_4 als Zahl 0-15
+- Funktion **getInputs()** - liest in_1 bis in_4 als Zahl 0-15, alle vier auf einmal und erst, wenn der Wert stabil ist (zwei gleiche Lesungen im Abstand von 0,2 ms)
+- Funktion **await waitInputs(wert, timeout_ms)** - wartet, bis getInputs() den Wert liefert (ohne Wert: bis er sich ändert); gibt den Wert zurück, bei Timeout `None`
 - Funktion **log(text)** - schreibt ins Log
-- Funktion **beep(frequenz, dauer_ms)** - erzeugt einen Ton; ohne Dauer klingt er, bis der nächste Ton kommt (`beep(0)` = aus)
+- Funktion **beep(frequenz, dauer_ms)** - erzeugt einen Ton; ohne Dauer klingt er, bis der nächste Ton kommt (`beep(0)` = aus). Höchstens 32 Töne warten, weitere werden ignoriert
 - Funktion **setColors(liste)** - setzt die Farbmatrix der LED-Matrix (welches Pixel in welcher Farbe leuchtet, wenn es an ist; siehe [LED-Matrix](../README.md#die-led-matrix-als-bildschirm)): eine Liste mit **64 Farbnamen**, oberste Zeile zuerst (`"schwarz"`, `"rot"`, `"orange"`, `"gelb"`, `"gruen"`, `"tuerkis"`, `"blau"`, `"violett"`, `"magenta"`, `"weiss"`). Wer seine Farben als 8x8-Matrix schreibt, übergibt `[c for zeile in matrix for c in zeile]`.
 - Funktion **setPalette(nummer, (r, g, b))** - ändert eine der 16 Farben der Palette, z. B. `setPalette(10, (5, 0, 5))`
 - Das gesamte Neopixel-Objekt **np** für komplexere Anforderungen an die LED-Matrix. Die Helligkeit ist zum Schutz der USB-Versorgung begrenzt (`LED_MAX_MA = 250` in main.py; mit eigenem Netzteil ab 2 A bis etwa 1000).

@@ -133,6 +133,11 @@ HINWEISE ZUM BETRIEB
    nicht. Fehlt er, in Thonny im Bereich "MicroPython-Geraet" per
    Rechtsklick -> "Neuer Ordner..." (englisch: "New directory...")
    anlegen und "userscripts" nennen.
+ - Autostart: Unter "Controls" lassen sich ein Userscript (der Name im
+   Editor) und die LED-Matrix fuer den Start nach dem Einschalten
+   ankreuzen. Gespeichert wird das in "autostart.json" auf dem ESP.
+   Macht ein Autostart-Script Probleme: in Thonny verbinden (das
+   unterbricht main.py) und autostart.json auf dem ESP loeschen.
  - Userscripts laufen neben Webserver und Matrix. Vor dem Start prueft
    der ESP sie und startet sie nicht, wenn
      * eine while- oder for-Schleife kein "await" enthaelt

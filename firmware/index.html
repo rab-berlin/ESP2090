@@ -200,8 +200,26 @@ button.ctl {
     box-shadow:0 0 6px 1px #e44;
 }
 /* Dateiauswahl als Feld neben "Upload" (echtes Eingabefeld versteckt) */
-#buschfile {
+#buschfile, #pcfile {
     display:none;
+}
+/* Autostart: zwei Haekchen unter Upload */
+.auto-row label {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    white-space:nowrap;
+}
+.auto-row input {
+    width:18px;
+    height:18px;
+    margin:0;
+}
+#autoName {
+    color:#0f0;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 #buschpick {
     flex:1;
@@ -263,7 +281,9 @@ button.ctl {
             <datalist id="fname_list"></datalist>
 
             <button onclick="save()">Save</button>
-            <button onclick="load()">Load</button>
+            <button onclick="load()" title="Load the file from the ESP">Load</button>
+            <button onclick="pcFile.click()" title="Load a .py file from your computer">PC…</button>
+            <input type="file" id="pcfile" accept=".py,.txt">
             <button onclick="run()">Run</button>
             <button onclick="stop()">Stop</button>
         </div>
@@ -293,6 +313,15 @@ button.ctl {
                 <input type="file" id="buschfile" accept=".mic,.txt">
                 <div id="buschpick" class="empty" title="Choose a .mic file"
                      onclick="document.getElementById('buschfile').click()">choose .mic file…</div>
+            </div>
+            <div class="ctl-row auto-row">
+                <label title="Switch the LED matrix on after power-up">
+                    <input type="checkbox" id="autoLed" onchange="setAutostart('led=' + (this.checked ? 1 : 0))">Autostart LED</label>
+            </div>
+            <div class="ctl-row auto-row">
+                <label title="Start this script after power-up (uses the filename in the editor)">
+                    <input type="checkbox" id="autoScript" onchange="autostartScript(this.checked)">Autostart script</label>
+                <span id="autoName"></span>
             </div>
             <div class="ctl-row">
                 <button class="ctl" onclick="resetESP()">ESP Reset</button>
@@ -377,9 +406,70 @@ async function load(){
     }
 }
 
+// Run speichert vorher auf dem ESP: gestartet wird, was im Editor steht
 async function run(){
     let p = scriptParam(); if (!p) return;
+    let saved = await request("/save?" + p, {method:"POST", body:codeBox.value});
+    if (saved === null) return;
+    await loadFileList();
     await request("/run?" + p);
+}
+
+// Script vom PC laden: nur in den Editor, gespeichert wird mit Save (oder Run)
+const pcFile = document.getElementById("pcfile");
+pcFile.addEventListener("change", async () => {
+    let file = pcFile.files[0];
+    if (!file) return;
+    codeBox.value = await file.text();
+    inputFilename.value = file.name.endsWith(".py") ? file.name : file.name + ".py";
+    showStatus(statusBox, "Loaded " + file.name + " from PC (not yet saved on ESP)", false);
+    pcFile.value = "";      // dieselbe Datei kann noch einmal gewaehlt werden
+});
+
+// Autostart: Zustand vom ESP holen und anzeigen; Aenderungen sofort speichern
+const autoLed = document.getElementById("autoLed");
+const autoScript = document.getElementById("autoScript");
+const autoName = document.getElementById("autoName");
+
+function showAutostart(cfg){
+    autoLed.checked = !!cfg.led;
+    autoScript.checked = !!cfg.script;
+    autoName.innerText = cfg.script ? cfg.script.replace("userscripts/", "") : "";
+}
+
+async function loadAutostart(){
+    try {
+        let r = await fetch("/autostart");
+        showAutostart(await r.json());
+    } catch(e) {
+        console.error("Failed to load autostart", e);
+    }
+}
+window.addEventListener("load", loadAutostart);
+
+async function setAutostart(query){
+    try {
+        let r = await fetch("/autostart?" + query, {method:"POST"});
+        if (!r.ok){
+            showStatus(statusBox, "Error " + r.status + ": " + await r.text(), true);
+        } else {
+            let cfg = await r.json();
+            showAutostart(cfg);
+            showStatus(statusBox, "Autostart: " + (cfg.script ? cfg.script.replace("userscripts/", "") : "no script")
+                + (cfg.led ? ", LED on" : ""), false);
+            return;
+        }
+    } catch(e) {
+        showStatus(statusBox, "Error: no connection to ESP (" + e + ")", true);
+    }
+    loadAutostart();        // Haekchen wieder auf den Stand des ESP
+}
+
+function autostartScript(on){
+    if (!on){ setAutostart("script="); return; }
+    let p = scriptParam();
+    if (!p){ autoScript.checked = false; return; }
+    setAutostart(p.replace("name=", "script="));
 }
 
 async function stop(){ await request("/stop"); }
