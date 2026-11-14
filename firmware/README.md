@@ -16,7 +16,7 @@ Die WLAN-Zugangsdaten stehen in **wifi.json** (Vorlage: `wifi.json.beispiel`). F
 
 **Wichtig:** Auf dem ESP32 muss der Ordner **userscripts** existieren – er enthält die Python-Skripte, die zur Laufzeit geladen und gestartet werden. Ohne ihn funktionieren Speichern, Laden und die Dateiliste in der Weboberfläche nicht. Beim Hochladen mit Thonny also den Ordner `userscripts` mit auswählen.
 
-Die Weboberfläche läuft auf Port 8080: `http://<IP-Adresse>:8080`. Links der Editor für User-Skripte (Save/Load auf dem ESP, **PC…** lädt ein Skript vom PC in den Editor, **Run** speichert und startet), in der Mitte das Log und die Web-Taster G/H, rechts die LED-Matrix (live) mit den Knöpfen für Matrix an/aus, MIC-Upload zum 2090 (stoppt vorher Userscript und Matrix), Autostart (Matrix und/oder ein Skript nach dem Einschalten, gespeichert in `autostart.json`) und ESP-Reset.
+Die Weboberfläche läuft auf Port 8080: `http://<IP-Adresse>:8080`. Links der Editor für User-Skripte (Save/Load auf dem ESP, **PC…** lädt ein Skript vom PC in den Editor, **Run** speichert und startet), in der Mitte das Log und die Web-Taster G/H, rechts die LED-Matrix (live) mit den Knöpfen für Matrix an/aus, MIC-Upload zum 2090 (am 2090 vorher HALT PGM 1, nach der Übertragung RESET; stoppt vorher Userscript und Matrix), Autostart (Matrix und/oder ein Skript nach dem Einschalten, gespeichert in `autostart.json`) und ESP-Reset.
 
 In User-Skripten kann auf folgende Objekte und Funktionen des ESP2090-Studios zugegriffen werden:
 

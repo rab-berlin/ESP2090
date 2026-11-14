@@ -323,7 +323,7 @@ label.auto-row input, .auto-row input {
                 <span id="ledState" class="off" title="LED matrix inactive"><span class="dot"></span></span>
             </div>
             <div class="ctl-row">
-                <button class="ctl" onclick="buschUpload()">Upload</button>
+                <button class="ctl" onclick="buschUpload()" title="On the 2090: press HALT PGM 1 first">Upload</button>
                 <input type="file" id="buschfile" accept=".mic,.txt">
                 <div id="buschpick" class="empty" title="Choose a .mic file"
                      onclick="document.getElementById('buschfile').click()">choose .mic file…</div>
@@ -509,6 +509,7 @@ buschFile.addEventListener("change", ()=>{
     let f = buschFile.files[0];
     buschPick.textContent = f ? f.name : "choose .mic file…";
     buschPick.classList.toggle("empty", !f);
+    if (f) showStatus(statusBox, "On the 2090: press HALT PGM 1, then Upload.", false);
 });
 const matrixGrid = document.getElementById("matrix");
 const leds = [];
@@ -611,11 +612,11 @@ async function buschUpload(){
 
  let fd=new FormData();
  fd.append("file", new Blob([instr.join("\n") + "\n"], {type: "text/plain"}), file.name);
- showStatus(statusBox, "Transferring " + instr.length + " instructions (approx. " + Math.ceil(instr.length * 0.13) + " s) ...", false);
+ showStatus(statusBox, "Transferring " + instr.length + " instructions (approx. " + Math.ceil(instr.length * 0.13) + " s, 2090 in PGM 1) ...", false);
  try {
   let r=await fetch("/busch_upload",{method:"POST",body:fd});
   let t=await r.text();
-  showStatus(statusBox, r.ok ? t : "Error " + r.status + ": " + t, !r.ok);
+  showStatus(statusBox, r.ok ? t + " - now press RESET on the 2090" : "Error " + r.status + ": " + t, !r.ok);
  } catch(e) {
   showStatus(statusBox, "Error: no connection to ESP (" + e + ")", true);
  }
