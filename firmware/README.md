@@ -10,7 +10,7 @@ Die _"Firmware"_ für das ESP2090-Studio besteht aus:
   - [webrepl_cfg.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/webrepl_cfg.py) mit dem WebREPL-Passwort (bitte vor dem Hochladen ändern)
 - der HTML-Webseite [index.html](https://github.com/rab-berlin/ESP2090/blob/main/firmware/index.html)
 
-**Installation:** siehe [ANLEITUNG.txt](https://github.com/rab-berlin/ESP2090/blob/main/firmware/ANLEITUNG.txt) – empfohlen und erprobt mit [Thonny](https://thonny.org), das danach wieder deinstalliert werden kann, wenn es nicht gebraucht wird. Die Skripte `install_windows.bat` und `install_mac_linux.sh` (mpremote) sind nicht getestet.
+**Installation:** siehe [ANLEITUNG.md](https://github.com/rab-berlin/ESP2090/blob/main/firmware/ANLEITUNG.md) – empfohlen und erprobt mit [Thonny](https://thonny.org), das danach wieder deinstalliert werden kann, wenn es nicht gebraucht wird. Die Skripte `install_windows.bat` und `install_mac_linux.sh` (mpremote) sind nicht getestet.
 
 Die WLAN-Zugangsdaten stehen in **wifi.json** (Vorlage: `wifi.json.beispiel`). Fehlt sie, startet der ESP im Einrichtungsmodus (WLAN „ESP32-Setup“) und fragt im Browser nach dem Netz.
 

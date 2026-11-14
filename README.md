@@ -111,7 +111,7 @@ Der größte Verbraucher ist die LED-Matrix. 64 LEDs in voller Helligkeit (weiß
 
 ## Schnellstart: Firmware installieren
 
-Die ausführliche Anleitung mit Fehlersuche steht in [firmware/ANLEITUNG.txt](firmware/ANLEITUNG.txt), die Funktionen für Userscripts in [firmware/README.md](firmware/README.md). In Kürze:
+Die ausführliche Anleitung mit Fehlersuche steht in [firmware/ANLEITUNG.md](firmware/ANLEITUNG.md), die Funktionen für Userscripts in [firmware/README.md](firmware/README.md). In Kürze:
 
 1. **MicroPython flashen** (einmalig): [Thonny](https://thonny.org) installieren, ESP per USB-C anschließen (ein Datenkabel, kein reines Ladekabel). Unter *Werkzeuge → Optionen → Interpreter* „MicroPython (ESP32)“ wählen und *MicroPython installieren* mit Familie und Variante **ESP32-C3**. Erprobt mit MicroPython 1.27.0 und 1.29.0. Wird der ESP nicht erkannt: BOOT-Taste beim Einstecken gedrückt halten.
 2. **WLAN eintragen:** `wifi.json.beispiel` als `wifi.json` kopieren und WLAN-Name und Passwort eintragen. Ohne diese Datei öffnet der ESP ein eigenes WLAN „ESP32-Setup“ (Passwort 12345678), dort unter http://192.168.4.1 das WLAN auswählen.

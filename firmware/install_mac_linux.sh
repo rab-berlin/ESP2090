@@ -1,6 +1,6 @@
 #!/bin/sh
 # ESP2090 Studio - Dateien per mpremote auf den ESP32-C3 kopieren
-# Voraussetzung: MicroPython ist bereits geflasht (siehe ANLEITUNG.txt)
+# Voraussetzung: MicroPython ist bereits geflasht (siehe ANLEITUNG.md)
 # und mpremote ist installiert:  pip install mpremote
 set -e
 DIR="$(cd "$(dirname "$0")" && pwd)"
