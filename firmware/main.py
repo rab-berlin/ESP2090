@@ -200,7 +200,18 @@ def stop_matrix_tasks():
 
     matrix_tasks_running = False
     matrix_asleep = False
+    matrix_clear()
     log("LED task stopped")
+
+
+def matrix_clear():
+    # LED off: Bitmatrix, Farbmatrix, Stapel, Cursor und aktive Farbe zuruecksetzen
+    # (Palette bleibt) und die Anzeige sofort dunkel schalten. "LED on" loescht nicht,
+    # damit Farben aus einem Userscript (setColors) erhalten bleiben.
+    global matrix_dirty
+    M.clear()
+    matrix_dirty = True
+    matrix_show()
 
 
 def setColors(user_colors):

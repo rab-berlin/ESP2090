@@ -346,7 +346,7 @@ Das Programm muss die Matrix also nie eigens schlafen legen und wartet nur an di
 
 **Taster an Eingang 1:** Wird er genau beim Wecken gehalten, sieht das Programm ein REQ, das keines ist, und sendet sein Bild zu früh. Dieses Bild kann verloren gehen; mit dem nächsten Bild stimmt wieder alles.
 
-„LED on“ beginnt immer wach.
+„LED on“ beginnt immer wach. **„LED off“ räumt auf:** Bitmatrix, Farbmatrix (wieder überall rot), Stapel und aktive Farbe werden zurückgesetzt, die Matrix wird dunkel. Nur die mit `setPalette` geänderten Palettenfarben bleiben. „LED on“ löscht dagegen nichts – Farben, die ein Userscript vorher gesetzt hat, bleiben erhalten.
 
 **Wichtig:** Vor jeder Übertragung muss die Anzeige des 2090 mit `DISOUT` (`F02`) ausgeschaltet sein – nur dann stimmen die 9,3 ms. Wer zwischendurch etwas mit `DISP` anzeigt, schaltet sie vor dem nächsten ACK wieder aus. Am sichersten steht `DISOUT` am Anfang der Senderoutine.
 
@@ -470,7 +470,7 @@ B..  CALL punkt
 
 ### Matrix-Farben aus einem Userscript
 
-Statt mit ACK 14 und Zeichenart 0 kann man die Farbmatrix auch von einem Userscript aus füllen: `setColors(liste)` erwartet 64 Farbnamen, oberste Zeile zuerst (`"schwarz"`, `"rot"`, `"orange"`, `"gelb"`, `"gruen"`, `"tuerkis"`, `"blau"`, `"violett"`, `"magenta"`, `"weiss"`). So macht es die BerlinUhr mit [farbmatrix.py](https://github.com/rab-berlin/BerlinUhr2090/blob/main/program/farbmatrix.py): Das Script setzt einmal die Farben und endet, danach schickt der 2090 nur noch Bilder im Blockmodus.
+Statt mit ACK 14 und Zeichenart 0 kann man die Farbmatrix auch von einem Userscript aus füllen: `setColors(liste)` erwartet 64 Farbnamen, oberste Zeile zuerst (`"schwarz"`, `"rot"`, `"orange"`, `"gelb"`, `"gruen"`, `"tuerkis"`, `"blau"`, `"violett"`, `"magenta"`, `"weiss"`). So macht es die BerlinUhr mit [farbmatrix.py](https://github.com/rab-berlin/BerlinUhr2090/blob/main/program/farbmatrix.py): Das Script setzt einmal die Farben und endet, danach schickt der 2090 nur noch Bilder im Blockmodus. Nach „LED off“ sind die Farben weg; vor dem nächsten „LED on“ also das Farb-Script noch einmal starten.
 
 ### Beispiele für die Matrix
 
