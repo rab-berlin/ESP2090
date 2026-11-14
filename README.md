@@ -19,6 +19,7 @@ Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emu
 - [Was kann ich damit machen?](#was-kann-ich-damit-machen)
 - [Userscripts: der ESP2090 als Peripherie](#userscripts-der-esp2090-als-peripherie)
 - [Die LED-Matrix als Bildschirm](#die-led-matrix-als-bildschirm)
+- [Die Firmware: wie das ESP2090 innen tickt](#die-firmware-wie-das-esp2090-innen-tickt)
 - [Projekte mit dem ESP2090](#projekte-mit-dem-esp2090)
 - [Lizenz](#lizenz)
 
@@ -475,6 +476,45 @@ Statt mit ACK 14 und Zeichenart 0 kann man die Farbmatrix auch von einem Userscr
 demo_matrix liegt hier als kommentierte `.mic`-Datei; Film2090, BerlinUhr2090 und Life2090 haben eigene Repos mit ausführlicher Beschreibung.
 
 **So startest du ein Beispiel:** `.mic`-Datei mit **Upload** in der Weboberfläche zum 2090 übertragen, Programm auf dem 2090 starten, in der Weboberfläche **LED on** drücken.
+
+## Die Firmware: wie das ESP2090 innen tickt
+
+Die Firmware besteht aus ein paar Python-Dateien auf MicroPython. Ein Compiler oder eine Arduino-IDE ist nicht nötig. Genau das war das Ziel: Neue Ideen sollen zur Laufzeit ausprobiert werden können, ohne neu zu flashen.
+
+![Schichten der Software: vom ESP32-C3 bis zu den Tasks](docs/bilder/firmware-schichten.svg)
+
+### Ein Prozessor, viele Aufgaben
+
+Der ESP32-C3 hat nur einen Rechenkern, soll aber vieles gleichzeitig tun: die Weboberfläche bedienen, die LED-Matrix mit Bildern versorgen, den Buzzer spielen, das WLAN im Auge behalten und dein Userscript ausführen. MicroPython kennt zwar Threads, aber auch die laufen nie wirklich gleichzeitig. Vor allem kann ein Thread jederzeit unterbrochen werden, auch mitten im Einlesen eines Matrixbilds.
+
+Die Firmware nutzt deshalb **asyncio**, also kooperatives Multitasking. Jede Aufgabe ist ein eigener *Task*. Sie arbeitet ein Stück, sagt dann mit `await` „ich warte, mach du mal“, und der nächste Task kommt dran. Wann abgegeben wird, bestimmt jeder Task selbst.
+
+Das funktioniert nur, wenn alle mitspielen. Ein Task, der nie abgibt, legt alles andere lahm, auch die Weboberfläche. Darum gelten die [Regeln für Userscripts](#regeln-für-userscripts), und darum prüft der ESP jedes Script vor dem Start. Eine Schleife ohne `await` wird gar nicht erst gestartet.
+
+### Userscripts als Task
+
+Ein Userscript ist für den ESP einfach Text. Beim Start verpackt die Firmware diesen Text in eine `async`-Funktion, übersetzt ihn mit `exec` und startet ihn als Task, gleichrangig neben Webserver, Matrix, Buzzer und WLAN. Darum kann man im Script direkt `await` schreiben, ohne selbst eine Funktion anzulegen. Das Script sieht nur, was die Firmware ihm mitgibt: `setOutputs`, `getInputs`, `beep`, `log`, die Web-Taster, die Matrix-Funktionen. **Stop** bricht den Task ab. Danach setzt die Firmware die Ausgänge auf 0 und schaltet den Ton aus.
+
+### Warum Microdot?
+
+[Microdot](https://github.com/miguelgrinberg/microdot) ist ein kleiner Webserver für MicroPython, der aus einer einzigen Datei besteht. Er ist so aufgebaut wie die bekannten Python-Webframeworks: Eine Zeile `@app.get('/status')` über einer Funktion, und schon beantwortet sie diese Adresse. Vor allem aber läuft Microdot selbst auf asyncio. Der Webserver ist also einfach ein weiterer Task neben Matrix, Buzzer und Userscript.
+
+Speicher ist auf dem C3 knapp, und das merkt man an zwei Stellen. Die Webseite wird in kleinen Stücken verschickt statt am Stück. Der Browser fragt alle 200 ms nach dem Stand, bekommt Log und Matrixbild aber nur, wenn sich etwas geändert hat.
+
+### Zwei Ausnahmen: Matrix und Upload
+
+Zwei Aufgaben halten sich bewusst nicht an „regelmäßig abgeben“, weil sie auf die Millisekunde genau sein müssen:
+
+- **LED-Matrix:** Während ein Bild ankommt, rund 160 ms im Blockmodus, liest der Matrix-Task die Nibbles im festen Takt und gibt so lange nicht ab. Die Ausgänge des 2090 liest er dabei direkt aus dem GPIO-Register des ESP, alle vier in einem einzigen Zugriff. So gibt es keine Zwischenwerte. Erst nach dem Bild kommen die anderen Tasks dran. Bei laufender Matrix antwortet die Weboberfläche deshalb etwas träger.
+- **Upload zum 2090:** Das Programm geht Bit für Bit über die Eingänge des 2090, so wie früher vom Kassetteninterface 2095. Das dauert etwa 130 ms pro Befehl, bei 256 Befehlen also gut eine halbe Minute. In dieser Zeit tut der ESP nichts anderes. Deshalb gilt: erst hochladen, dann Userscript und Programm starten.
+
+### Ohne WLAN
+
+Beim Start versucht `boot.py`, sich mit dem WLAN aus `wifi.json` zu verbinden. Klappt das nicht, öffnet der ESP ein eigenes WLAN „ESP32-Setup“ mit einer kleinen Einrichtungsseite. Fällt das WLAN im Betrieb aus, verbindet sich der ESP von selbst neu.
+
+### Schutz für die Stromversorgung
+
+Auch Userscripts schreiben nicht direkt auf die LED-Matrix. Dazwischen sitzt eine kleine Hülle um den Neopixel-Treiber, die den Gesamtstrom zählt und das Bild notfalls abdunkelt. Mehr dazu unter [Stromversorgung](#stromversorgung).
 
 ## Projekte mit dem ESP2090
 
