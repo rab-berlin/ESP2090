@@ -186,19 +186,22 @@ Zu jedem Beispiel gehört ein Programm für den 2090 (`.mic`, ausführlich komme
 **So startest du ein Beispiel:**
 
 1. Den Inhalt der `.py`-Datei in den Editor der Weboberfläche kopieren und unter einem Namen speichern (z. B. `ton.py`) – noch **nicht** starten.
-2. Das Programm (`.mic`) mit **Upload** zum 2090 übertragen.
+2. Das Programm (`.mic`) zum 2090 übertragen:
+   1. Am 2090 **HALT PGM 1** drücken – jetzt wartet er auf ein Programm.
+   2. In der Weboberfläche die `.mic`-Datei wählen und **Upload** drücken.
+   3. Die Übertragung abwarten (Meldung in der Statuszeile), dann **RESET** am 2090.
 3. Erst jetzt das Userscript mit **Run** und das Programm auf dem 2090 starten.
 
-Die Reihenfolge ist wichtig: Der Upload benutzt dieselben Ein- und Ausgänge wie Userscript und Programm. Ein laufendes Userscript und die Matrix stoppt der Upload deshalb vorher selbst. Ob auf dem 2090 gerade ein Programm läuft, kann der ESP aber nicht sehen – also nie hochladen, während dort eins läuft. Die Matrix muss beim Ausprobieren der Beispiele aus sein.
+Die Reihenfolge ist wichtig: Der Upload benutzt dieselben Ein- und Ausgänge wie Userscript und Programm. Ein laufendes Userscript und die Matrix stoppt der Upload deshalb vorher selbst. Die Matrix muss beim Ausprobieren der Beispiele aus sein.
 
 #### Lauflicht – nur der ESP
 
-[firmware/userscripts/beispiel_lauflicht.py](firmware/userscripts/beispiel_lauflicht.py) liegt schon auf dem ESP. Es schaltet die Eingänge des 2090 im Halbsekundentakt nacheinander ein (Wert 1, 2, 4, 8). Gut zum Ausprobieren, ob alles verbunden ist. Sichtbar wird es mit drei Befehlen auf dem 2090, die die Eingänge laufend anzeigen:
+[firmware/userscripts/beispiel_lauflicht.py](firmware/userscripts/beispiel_lauflicht.py) liegt schon auf dem ESP. Es schaltet die Eingänge des 2090 im Halbsekundentakt nacheinander ein (Wert 1, 2, 4, 8). Gut zum Ausprobieren, ob alles verbunden ist. Sichtbar wird es mit drei Befehlen auf dem 2090, die die Eingänge laufend anzeigen. `DISP` steht vorn, weil es die Anzeige dauerhaft einschaltet – danach muss die Schleife nur noch lesen:
 
 ```
-00  FD0  DIN R0
-01  F10  DISP 1,R0
-02  C00  GOTO 00
+00  F10  DISP 1,R0
+01  FD0  DIN R0
+02  C01  GOTO 01
 ```
 
 #### Ton – der 2090 als Klavier (eine Richtung: 2090 → ESP)
@@ -427,16 +430,21 @@ Bei ACK 3 ist das Nibble direkt die Zeichenart: `ACK 3, 1` füllt die ganze Matr
 
 Ein Userscript kann jede dieser Farben mit `setPalette(nummer, (r, g, b))` ändern.
 
-**Stapel (ACK 13):** Der ESP hat für die Farbmatrix und für die Bitmatrix je einen Stapel mit 8 Plätzen. Das Nibble w sagt, was passiert:
+**Stapel (ACK 13):** Der ESP hat **zwei Stapel** mit je 8 Plätzen: einen für die Farbmatrix und einen für die Bitmatrix. Sie sind voneinander unabhängig – ein push auf den Farbmatrix-Stapel lässt den Bitmatrix-Stapel unberührt. Das Nibble w setzt sich aus zwei Teilen zusammen:
 
-| w | Wirkung |
-|---|---|
-| 1 / 2 / 3 | **push**: Farbmatrix / Bitmatrix / beide auf den Stapel legen |
-| 5 / 6 / 7 | **pop**: oberste Sicherung zurückholen und vom Stapel nehmen |
-| 9 / 10 / 11 | **peek**: oberste Sicherung zurückholen, sie bleibt auf dem Stapel |
-| 13 / 14 / 15 | Stapel leeren |
+- **Welcher Stapel** – die unteren beiden Bits: 1 = Farbmatrix, 2 = Bitmatrix, 3 = beide.
+- **Was passiert** – die oberen beiden Bits: +0 push, +4 pop, +8 peek, +12 leeren.
 
-Bit 0 steht für die Farbmatrix, Bit 1 für die Bitmatrix, die oberen beiden Bits für die Aktion (+0 push, +4 pop, +8 peek, +12 leeren). Ist ein Stapel voll, fällt beim nächsten push die älteste Sicherung heraus; pop und peek auf einen leeren Stapel ändern nichts. Pop und peek ändern nur die Matrix, die Anzeige bleibt zunächst, wie sie ist. Sichtbar wird das Ergebnis mit dem nächsten Neuaufbau, etwa dem nächsten Bild. [Film2090](https://github.com/rab-berlin/Film2090) legt am Start die Farben, die vorher ein Userscript gesetzt hat, auf den Stapel und holt sie nach jeder Szene mit peek zurück.
+w ist also Aktion + Stapel, zum Beispiel w = 7 = 4 + 3: pop für beide Stapel.
+
+| Aktion | Farbmatrix | Bitmatrix | beide | Wirkung |
+|---|---|---|---|---|
+| push | 1 | 2 | 3 | die Matrix als Sicherung oben auf ihren Stapel legen |
+| pop | 5 | 6 | 7 | oberste Sicherung in die Matrix zurückholen und vom Stapel nehmen |
+| peek | 9 | 10 | 11 | oberste Sicherung zurückholen, sie bleibt auf dem Stapel |
+| leeren | 13 | 14 | 15 | alle Sicherungen des Stapels löschen |
+
+w = 0, 4, 8 und 12 wählen keinen Stapel und bewirken nichts. Ist ein Stapel voll, fällt beim nächsten push die älteste Sicherung heraus; pop und peek auf einen leeren Stapel ändern nichts. Pop und peek ändern nur die Matrix, die Anzeige bleibt zunächst, wie sie ist. Sichtbar wird das Ergebnis mit dem nächsten Neuaufbau, etwa dem nächsten Bild. [Film2090](https://github.com/rab-berlin/Film2090) legt am Start die Farben, die vorher ein Userscript gesetzt hat, auf den Stapel und holt sie nach jeder Szene mit peek zurück.
 
 **Zeitablauf:** Das erste Nibble kommt **direkt im nächsten Schritt** nach dem ACK. Der ESP liest es 14,2 ms nach dem ACK, das zweite 9,2 ms später.
 
@@ -483,11 +491,11 @@ Statt mit ACK 14 und Zeichenart 0 kann man die Farbmatrix auch von einem Userscr
 
 demo_matrix liegt hier als kommentierte `.mic`-Datei; Film2090, BerlinUhr2090 und Life2090 haben eigene Repos mit ausführlicher Beschreibung.
 
-**So startest du ein Beispiel:** `.mic`-Datei mit **Upload** in der Weboberfläche zum 2090 übertragen, Programm auf dem 2090 starten, in der Weboberfläche **LED on** drücken.
+**So startest du ein Beispiel:** Am 2090 **HALT PGM 1** drücken, in der Weboberfläche die `.mic`-Datei wählen und **Upload** drücken, Übertragung abwarten, **RESET** am 2090. Dann das Programm auf dem 2090 starten und in der Weboberfläche **LED on** drücken.
 
 ## Die Firmware: wie das ESP2090 innen tickt
 
-Die Firmware besteht aus ein paar Python-Dateien auf MicroPython. Ein Compiler oder eine Arduino-IDE ist nicht nötig. Genau das war das Ziel: Neue Ideen sollen zur Laufzeit ausprobiert werden können, ohne neu zu flashen.
+Die Firmware besteht aus ein paar Python-Dateien auf MicroPython. Das war das Ziel: Neue Ideen sollen zur Laufzeit ausprobiert werden können, ohne neu zu flashen.
 
 ![Schichten der Software: vom ESP32-C3 bis zu den Tasks](docs/bilder/firmware-schichten.svg)
 
@@ -514,7 +522,7 @@ Speicher ist auf dem C3 knapp, und das merkt man an zwei Stellen. Die Webseite w
 Zwei Aufgaben halten sich bewusst nicht an „regelmäßig abgeben“, weil sie auf die Millisekunde genau sein müssen:
 
 - **LED-Matrix:** Während ein Bild ankommt, rund 160 ms im Blockmodus, liest der Matrix-Task die Nibbles im festen Takt und gibt so lange nicht ab. Die Ausgänge des 2090 liest er dabei direkt aus dem GPIO-Register des ESP, alle vier in einem einzigen Zugriff. So gibt es keine Zwischenwerte. Erst nach dem Bild kommen die anderen Tasks dran. Bei laufender Matrix antwortet die Weboberfläche deshalb etwas träger.
-- **Upload zum 2090:** Das Programm geht Bit für Bit über die Eingänge des 2090, so wie früher vom Kassetteninterface 2095. Das dauert etwa 130 ms pro Befehl, bei 256 Befehlen also gut eine halbe Minute. In dieser Zeit tut der ESP nichts anderes. Ein laufendes Userscript und die Matrix stoppt der Upload deshalb vorher selbst. Trotzdem gilt: erst hochladen, dann Userscript und Programm starten.
+- **Upload zum 2090:** Das Programm geht Bit für Bit über die Eingänge des 2090, so wie früher vom Kassetteninterface 2095. Der 2090 empfängt es mit **PGM 1** (vorher HALT drücken, nach der Übertragung RESET). Das dauert etwa 130 ms pro Befehl, bei 256 Befehlen also gut eine halbe Minute. In dieser Zeit tut der ESP nichts anderes. Ein laufendes Userscript und die Matrix stoppt der Upload deshalb vorher selbst. Trotzdem gilt: erst hochladen, dann Userscript und Programm starten.
 
 ### Ohne WLAN
 
@@ -549,6 +557,8 @@ Auch Userscripts schreiben nicht direkt auf die LED-Matrix. Dazwischen sitzt ein
 Diese Programme laufen auf einem Microtronic ohne jede Erweiterung und brauchen nichts vom ESP2090. Nützlich ist es trotzdem: Mit **Upload** in der Weboberfläche kommt das Programm direkt in den 2090, statt 256 Programmschritte von Hand einzutippen – auch wenn Letzteres natürlich das richtige 80er-Jahre-Gefühl erzeugt.
 
 #### [Blackjack2090](https://github.com/rab-berlin/Blackjack2090)
+
+#### [Mensch2090](https://github.com/rab-berlin/Mensch2090)
 
 ## Lizenz
 
