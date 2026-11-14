@@ -203,15 +203,22 @@ button.ctl {
 #buschfile, #pcfile {
     display:none;
 }
-/* Autostart: zwei Haekchen unter Upload */
-.auto-row label {
+/* Autostart: Script unter der Dateizeile, LED neben dem LED-Button */
+#autoScriptRow {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:8px;
+    min-width:0;
+}
+label.auto-row, .auto-row label {
     display:flex;
     align-items:center;
     gap:6px;
     cursor:pointer;
     white-space:nowrap;
 }
-.auto-row input {
+label.auto-row input, .auto-row input {
     width:18px;
     height:18px;
     margin:0;
@@ -287,6 +294,11 @@ button.ctl {
             <button onclick="run()">Run</button>
             <button onclick="stop()">Stop</button>
         </div>
+        <div class="auto-row" id="autoScriptRow">
+            <label title="Start this script after power-up (uses the filename above)">
+                <input type="checkbox" id="autoScript" onchange="autostartScript(this.checked)">Autostart script</label>
+            <span id="autoName"></span>
+        </div>
         <div id="status"></div>
     </div>
 
@@ -306,6 +318,8 @@ button.ctl {
             <h3>Controls</h3>
             <div class="ctl-row" id="ledRow">
                 <button id="btnLed" class="ctl" onclick="matrixToggle()">LED on</button>
+                <label class="auto-row" title="Switch the LED matrix on after power-up">
+                    <input type="checkbox" id="autoLed" onchange="setAutostart('led=' + (this.checked ? 1 : 0))">Autostart</label>
                 <span id="ledState" class="off" title="LED matrix inactive"><span class="dot"></span></span>
             </div>
             <div class="ctl-row">
@@ -313,15 +327,6 @@ button.ctl {
                 <input type="file" id="buschfile" accept=".mic,.txt">
                 <div id="buschpick" class="empty" title="Choose a .mic file"
                      onclick="document.getElementById('buschfile').click()">choose .mic file…</div>
-            </div>
-            <div class="ctl-row auto-row">
-                <label title="Switch the LED matrix on after power-up">
-                    <input type="checkbox" id="autoLed" onchange="setAutostart('led=' + (this.checked ? 1 : 0))">Autostart LED</label>
-            </div>
-            <div class="ctl-row auto-row">
-                <label title="Start this script after power-up (uses the filename in the editor)">
-                    <input type="checkbox" id="autoScript" onchange="autostartScript(this.checked)">Autostart script</label>
-                <span id="autoName"></span>
             </div>
             <div class="ctl-row">
                 <button class="ctl" onclick="resetESP()">ESP Reset</button>

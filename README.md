@@ -175,7 +175,7 @@ Zum Warten auf den 2090 gibt es eine fertige Hilfe: `await waitInputs(wert, time
 
 ### Autostart
 
-Unter **Controls** in der Weboberfläche lassen sich zwei Häkchen setzen: **Autostart LED** schaltet die Matrix nach dem Einschalten ein, **Autostart script** startet das Script, dessen Name gerade im Editor steht. Beides wird sofort auf dem ESP gespeichert. Nach dem Einschalten wartet der ESP zwei Sekunden, dann startet er erst die Matrix und danach das Script – mit derselben Prüfung wie bei **Run**. So läuft zum Beispiel die BerlinUhr, ohne dass man jedes Mal die Weboberfläche öffnen muss.
+In der Weboberfläche gibt es dafür zwei Häkchen: **Autostart script** unter der Dateizeile startet das Script, dessen Name gerade im Namensfeld steht, **Autostart** neben dem Button **LED on** schaltet die Matrix ein. Beides wird sofort auf dem ESP gespeichert. Nach dem Einschalten wartet der ESP zwei Sekunden, dann startet er erst die Matrix und danach das Script – mit derselben Prüfung wie bei **Run**. So läuft zum Beispiel die BerlinUhr, ohne dass man jedes Mal die Weboberfläche öffnen muss.
 
 Macht ein Autostart-Script Probleme, hilft Thonny: Beim Verbinden unterbricht es die Firmware, dann die Datei `autostart.json` auf dem ESP löschen.
 
