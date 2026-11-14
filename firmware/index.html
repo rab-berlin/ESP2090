@@ -323,7 +323,7 @@ label.auto-row input, .auto-row input {
                 <span id="ledState" class="off" title="LED matrix inactive"><span class="dot"></span></span>
             </div>
             <div class="ctl-row">
-                <button class="ctl" onclick="buschUpload()" title="On the 2090: HALT PGM 1 first, RESET after the transfer">Upload</button>
+                <button class="ctl" onclick="buschUpload()" title="On the 2090: press HALT PGM 1 first">Upload</button>
                 <input type="file" id="buschfile" accept=".mic,.txt">
                 <div id="buschpick" class="empty" title="Choose a .mic file"
                      onclick="document.getElementById('buschfile').click()">choose .mic file…</div>
@@ -509,7 +509,7 @@ buschFile.addEventListener("change", ()=>{
     let f = buschFile.files[0];
     buschPick.textContent = f ? f.name : "choose .mic file…";
     buschPick.classList.toggle("empty", !f);
-    if (f) showStatus(statusBox, "On the 2090: press HALT PGM 1, then Upload. Press RESET on the 2090 when the transfer is done.", false);
+    if (f) showStatus(statusBox, "On the 2090: press HALT PGM 1, then Upload.", false);
 });
 const matrixGrid = document.getElementById("matrix");
 const leds = [];
