@@ -7,7 +7,7 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
 
 echo "Kopiere Programmdateien ..."
-mpremote cp boot.py hw.py main.py matrix_draw.py basicweb.py microdot.py index.html webrepl_cfg.py :
+mpremote cp boot.py hw.py main.py core.py matrix.py scripts.py upload.py matrix_draw.py basicweb.py microdot.py index.html webrepl_cfg.py :
 
 echo "Lege Ordner userscripts an ..."
 mpremote mkdir :userscripts 2>/dev/null || true

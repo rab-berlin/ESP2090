@@ -6,7 +6,7 @@ Alles liegt im Ordner `firmware` (im GitHub-Repo rab-berlin/ESP2090).
 
 **Auf den ESP kommen:**
 
-- `boot.py`, `hw.py`, `main.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py`
+- `boot.py`, `hw.py`, `main.py`, `core.py`, `matrix.py`, `scripts.py`, `upload.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py`
 - `userscripts/beispiel_lauflicht.py` (Beispiel, kann gelöscht werden)
 
 **Nur auf dem PC bleiben:**
@@ -64,11 +64,11 @@ Ohne `wifi.json` startet der ESP im Einrichtungsmodus, siehe [Ohne wifi.json](#o
 
 1. In Thonny: Menü *Ansicht → Dateien* einschalten.
 2. Oben im Dateien-Bereich (*Dieser Computer*) in den Ordner `firmware` wechseln.
-3. Diese Dateien **und den Ordner `userscripts`** markieren: `boot.py`, `hw.py`, `main.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py` (nicht: `ANLEITUNG.md`, `README.md`, install-Skripte, `wifi.json.beispiel`). Rechtsklick → *Hochladen nach /* (englisch: *Upload to /*).
+3. Diese Dateien **und den Ordner `userscripts`** markieren: `boot.py`, `hw.py`, `main.py`, `core.py`, `matrix.py`, `scripts.py`, `upload.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py` (nicht: `ANLEITUNG.md`, `README.md`, install-Skripte, `wifi.json.beispiel`). Rechtsklick → *Hochladen nach /* (englisch: *Upload to /*).
 
    > **Wichtig:** Der Ordner `userscripts` muss mit auf den ESP! Ohne ihn funktionieren Speichern, Laden und die Dateiliste in der Weboberfläche nicht.
 4. Die eigene `wifi.json` (aus Schritt 2) ebenso hochladen.
-5. Prüfen: Unten im Bereich *MicroPython-Gerät* müssen jetzt stehen: `boot.py`, `hw.py`, `main.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py`, `wifi.json` und der Ordner `userscripts`.
+5. Prüfen: Unten im Bereich *MicroPython-Gerät* müssen jetzt stehen: `boot.py`, `hw.py`, `main.py`, `core.py`, `matrix.py`, `scripts.py`, `upload.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py`, `wifi.json` und der Ordner `userscripts`.
 
 ### Variante B – per Skript mit mpremote (nicht getestet)
 

@@ -115,7 +115,7 @@ Die ausführliche Anleitung mit Fehlersuche steht in [firmware/ANLEITUNG.md](fir
 
 1. **MicroPython flashen** (einmalig): [Thonny](https://thonny.org) installieren, ESP per USB-C anschließen (ein Datenkabel, kein reines Ladekabel). Unter *Werkzeuge → Optionen → Interpreter* „MicroPython (ESP32)“ wählen und *MicroPython installieren* mit Familie und Variante **ESP32-C3**. Erprobt mit MicroPython 1.27.0 und 1.29.0. Wird der ESP nicht erkannt: BOOT-Taste beim Einstecken gedrückt halten.
 2. **WLAN eintragen:** `wifi.json.beispiel` als `wifi.json` kopieren und WLAN-Name und Passwort eintragen. Ohne diese Datei öffnet der ESP ein eigenes WLAN „ESP32-Setup“ (Passwort 12345678), dort unter http://192.168.4.1 das WLAN auswählen.
-3. **Dateien kopieren:** In Thonny (*Ansicht → Dateien*) aus dem Ordner `firmware` diese Dateien **und den Ordner `userscripts`** auf den ESP hochladen: `boot.py`, `hw.py`, `main.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py` sowie die eigene `wifi.json`. Vorher in `webrepl_cfg.py` das WebREPL-Passwort ändern.
+3. **Dateien kopieren:** In Thonny (*Ansicht → Dateien*) aus dem Ordner `firmware` diese Dateien **und den Ordner `userscripts`** auf den ESP hochladen: `boot.py`, `hw.py`, `main.py`, `core.py`, `matrix.py`, `scripts.py`, `upload.py`, `matrix_draw.py`, `basicweb.py`, `microdot.py`, `index.html`, `webrepl_cfg.py` sowie die eigene `wifi.json`. Vorher in `webrepl_cfg.py` das WebREPL-Passwort ändern.
 4. **Starten:** RST am ESP drücken. In der Thonny-Shell erscheint die IP-Adresse, dann im Browser **http://&lt;IP-Adresse&gt;:8080** öffnen (das `:8080` nicht vergessen).
 
 ## Was kann ich damit machen?
@@ -516,7 +516,7 @@ Ein Userscript ist für den ESP einfach Text. Beim Start verpackt die Firmware d
 
 [Microdot](https://github.com/miguelgrinberg/microdot) ist ein kleiner Webserver für MicroPython, der aus einer einzigen Datei besteht. Er ist so aufgebaut wie die bekannten Python-Webframeworks: Eine Zeile `@app.get('/status')` über einer Funktion, und schon beantwortet sie diese Adresse. Vor allem aber läuft Microdot selbst auf asyncio. Der Webserver ist also einfach ein weiterer Task neben Matrix, Buzzer und Userscript.
 
-Speicher ist auf dem C3 knapp, und das merkt man an zwei Stellen. Die Webseite wird in kleinen Stücken verschickt statt am Stück. Der Browser fragt alle 200 ms nach dem Stand, bekommt Log und Matrixbild aber nur, wenn sich etwas geändert hat.
+Speicher ist auf dem C3 knapp, und das merkt man an drei Stellen. Die Firmware ist auf mehrere Dateien verteilt (`main.py` für den Webserver, dazu `core.py`, `matrix.py`, `scripts.py`, `upload.py`), weil der ESP jede Datei beim Start aus dem Quelltext übersetzt – eine einzige große Datei hätte dafür nicht genug Speicher. Die Webseite wird in kleinen Stücken verschickt statt am Stück. Der Browser fragt alle 200 ms nach dem Stand, bekommt Log und Matrixbild aber nur, wenn sich etwas geändert hat.
 
 ### Zwei Ausnahmen: Matrix und Upload
 
