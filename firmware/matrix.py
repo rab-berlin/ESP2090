@@ -297,9 +297,6 @@ async def matrix_task():
         # 2. Auf ACK warten 
         # =========================
         while True:
-            
-            # hier asyncio sleep, aber funktioniert nicht...
-                        
             now = time.ticks_us()
             elapsed = time.ticks_diff(now, req_time)
             
