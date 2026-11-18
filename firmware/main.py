@@ -1,6 +1,6 @@
 # Firmware-Version: bei jeder Aenderung an den Geraetedateien erhoehen
 # (auch in README.md, Abschnitt Versionen). Angezeigt in der Weboberflaeche.
-FW_VERSION = "1.8"
+FW_VERSION = "1.9"
 
 # Die Firmware ist auf mehrere Dateien verteilt, damit der ESP beim Start nie eine
 # grosse Datei auf einmal uebersetzen muss (Speicher). Reihenfolge: die groesste
