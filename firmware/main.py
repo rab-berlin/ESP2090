@@ -1,3 +1,7 @@
+# Firmware-Version: bei jeder Aenderung an den Geraetedateien erhoehen
+# (auch in README.md, Abschnitt Versionen). Angezeigt in der Weboberflaeche.
+FW_VERSION = "1.7"
+
 import uasyncio as asyncio
 from microdot import Microdot, Response
 from machine import Pin, PWM
@@ -1095,6 +1099,10 @@ def autostart_save(cfg):
     with open(AUTOSTART_FILE, "w") as f:
         json.dump(cfg, f)
 
+@app.get("/version")
+async def version(req):
+    return FW_VERSION
+
 @app.get("/autostart")
 async def autostart_get(req):
     return autostart_config()
@@ -1152,7 +1160,8 @@ async def main_task():
     #asyncio.create_task(matrix_display_task())
     #asyncio.create_task(matrix_task())
 
-    log("Server started")
+    print("ESP2090 firmware v" + FW_VERSION)
+    log("Server started, firmware v" + FW_VERSION)
 
     await app.start_server(port=8080)
 

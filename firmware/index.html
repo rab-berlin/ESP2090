@@ -18,6 +18,13 @@ h2 {
     color: #ff4444;
     margin: 5px 0 15px 0;
 }
+/* Firmware-Version klein neben dem Titel */
+#fwVersion {
+    color: #888;
+    font-size: 12px;
+    font-weight: normal;
+    margin-left: 8px;
+}
 textarea {
     width: 100%;
     font-family: monospace;
@@ -275,7 +282,7 @@ label.auto-row input, .auto-row input {
 </head>
 <body>
 
-<h2>ESP2090-Studio</h2>
+<h2>ESP2090-Studio<span id="fwVersion"></span></h2>
 
 <div class="flex-row">
     <!-- Editor Column -->
@@ -451,6 +458,17 @@ async function loadAutostart(){
     }
 }
 window.addEventListener("load", loadAutostart);
+
+// Firmware-Version des ESP klein neben dem Titel
+async function loadVersion(){
+    try {
+        let r = await fetch("/version");
+        if (r.ok) document.getElementById("fwVersion").innerText = "firmware v" + await r.text();
+    } catch(e) {
+        console.error("Failed to load version", e);
+    }
+}
+window.addEventListener("load", loadVersion);
 
 async function setAutostart(query){
     try {
