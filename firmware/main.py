@@ -86,11 +86,15 @@ async def load(req):
 
     name=req.args.get("name","script.py")
 
+    # In 1-KB-Stuecken aus der Datei senden (wie index.html): grosse Antworten am
+    # Stueck schafft Microdot auf dem ESP nicht (ab ca. 12-13 KB).
     try:
-        with open(name) as f:
-            return f.read(),200,{'Content-Type':'text/plain'}
+        is_dir = os.stat(name)[0] & 0x4000
     except OSError:
+        is_dir = None
+    if is_dir is None or is_dir:
         return "File not found: "+name,404
+    return Response.send_file(name, content_type="text/plain; charset=UTF-8")
 
 @app.get('/run')
 async def run(req):
@@ -127,8 +131,9 @@ async def list_py(req):
         for f in os.listdir("userscripts"):
             if f.endswith(".py"):
                 files.append(f)
-    except Exception as e:
+    except OSError as e:
         log("Error listing userscripts: "+str(e))
+    files.sort(key=lambda f: f.lower())    # alphabetisch, gross/klein egal
     return files
 
 # ================= WEB TASTER =================
@@ -215,9 +220,13 @@ async def status(req):
     return s
 
 # ================= WLAN =================
-# Bricht das WLAN im Betrieb ab, wird alle WIFI_CHECK_S Sekunden neu verbunden
-# (Zugangsdaten aus wifi.json). Meldungen auf der Konsole und im Web-Log.
+# Bricht das WLAN im Betrieb ab, wird neu verbunden (Zugangsdaten aus wifi.json).
+# Alle WIFI_CHECK_S Sekunden wird geprueft. Ein laufender Verbindungsaufbau
+# (STAT_CONNECTING) wird bis zu WIFI_CONNECT_S Sekunden abgewartet und nicht
+# abgebrochen - sonst kommt eine langsame Verbindung nie zustande.
+# Meldungen auf der Konsole und im Web-Log.
 WIFI_CHECK_S = 5
+WIFI_CONNECT_S = 20
 
 def wifi_message(text):
     print(text)
@@ -225,7 +234,10 @@ def wifi_message(text):
 
 async def wifi_task():
     sta = network.WLAN(network.STA_IF)
+    connecting = getattr(network, "STAT_CONNECTING", None)
     lost = False
+    waited = 0                      # Sekunden seit dem letzten Verbindungsversuch
+    error_logged = False            # Fehler nur einmal je Abbruch ins Web-Log
     while True:
         await asyncio.sleep(WIFI_CHECK_S)
         if sta.isconnected():
@@ -235,14 +247,28 @@ async def wifi_task():
             continue
         if not lost:
             lost = True
+            waited = 0
+            error_logged = False
             wifi_message("WiFi lost, reconnecting...")
+        else:
+            waited += WIFI_CHECK_S
+        try:
+            busy = connecting is not None and sta.status() == connecting
+        except (AttributeError, OSError):
+            busy = False
+        if busy and waited < WIFI_CONNECT_S:
+            continue                # Verbindungsaufbau laeuft noch: nicht abbrechen
+        waited = 0
         try:
             with open("wifi.json") as f:
                 cfg = json.load(f)
             sta.disconnect()
             sta.connect(cfg["ssid"], cfg["password"])
-        except Exception as e:
+        except (OSError, ValueError, KeyError) as e:
             print("WiFi reconnect error:", e)
+            if not error_logged:
+                error_logged = True
+                log("WiFi reconnect error: " + str(e))
 
 # ================= AUTOSTART =================
 # autostart.json: {"script": "userscripts/x.py", "led": true}. Fehlt die Datei,
