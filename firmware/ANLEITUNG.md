@@ -121,3 +121,4 @@ WebREPL ist aktiv. Das Passwort steht in `webrepl_cfg.py` („ichbins“). Bitte
 | Thonny meldet „Device is busy“ oder reagiert nicht | In Thonny auf *Stop/Neustart* (rotes Stoppschild) klicken. Das unterbricht das laufende Programm auf dem ESP. |
 | Webseite nicht erreichbar | Port 8080 in der Adresse? PC im selben WLAN wie der ESP? |
 | Falsche WLAN-Daten eingegeben | In Thonny die Datei `wifi.json` auf dem ESP löschen oder korrigieren und den ESP neu starten. |
+| Seite lädt nicht, Thonny meldet `MemoryError` beim Start | Prüfen, ob alle Dateien aktuell sind. Hilft das nicht: `microdot.py` auf dem PC vorübersetzen (`pip install mpy-cross`, dann `mpy-cross microdot.py`), `microdot.mpy` hochladen und `microdot.py` auf dem ESP löschen. Siehe README, Abschnitt zur Firmware. |
