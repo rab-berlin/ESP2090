@@ -1,7 +1,11 @@
 Die _"Firmware"_ für das ESP2090-Studio besteht aus:
 - [MicroPython](https://micropython.org/download/ESP32_GENERIC_C3), installiert auf dem ESP32-C3 (erprobt mit 1.27.0 und 1.29.0)
 - einigen Python-Skripten, im einzelnen
-  - [main.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/main.py) für die eigentliche Funktionalität des ESP2090-Studios
+  - [main.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/main.py) mit dem Webserver (alle Adressen der Weboberfläche), WLAN-Wächter, Autostart und Start
+  - [core.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/core.py) mit Log, Ein- und Ausgängen zum 2090, Web-Tastern und Buzzer
+  - [matrix.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/matrix.py) für die LED-Matrix (Einlesen der Bilder vom 2090)
+  - [scripts.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/scripts.py) für die Userscripts (Prüfung, Start, Stop)
+  - [upload.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/upload.py) für den Upload von .mic-Programmen zum 2090
   - [boot.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/boot.py) für GPIO-Initialisierung und Verbindung mit WLAN
   - [hw.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/hw.py) mit der Pinbelegung
   - [matrix_draw.py](https://github.com/rab-berlin/ESP2090/blob/main/firmware/matrix_draw.py) mit den Zeichenbefehlen für die LED-Matrix

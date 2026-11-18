@@ -6,7 +6,7 @@ REM und mpremote ist installiert:  pip install mpremote
 cd /d "%~dp0"
 
 echo Kopiere Programmdateien ...
-mpremote cp boot.py hw.py main.py matrix_draw.py basicweb.py microdot.py index.html webrepl_cfg.py :
+mpremote cp boot.py hw.py main.py core.py matrix.py scripts.py upload.py matrix_draw.py basicweb.py microdot.py index.html webrepl_cfg.py :
 if errorlevel 1 goto fehler
 
 echo Lege Ordner userscripts an ...

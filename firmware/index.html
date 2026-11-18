@@ -459,11 +459,22 @@ async function loadAutostart(){
 }
 window.addEventListener("load", loadAutostart);
 
-// Firmware-Version des ESP klein neben dem Titel
+// Firmware-Version und freier Speicher des ESP klein neben dem Titel: "v1.9 (85 KB free)".
+// Der Wert schwankt stark (Muell bis zur naechsten automatischen Muellabfuhr); angezeigt
+// wird der hoechste Wert der letzten MEM_WINDOW_MS - das ist der Stand nach dem Aufraeumen.
+const MEM_WINDOW_MS = 5000;
+let fwVersion = "";
+let memFree = 0;
+let memSamples = [];          // [zeit, wert]
+function showVersion(){
+    let text = fwVersion ? "v" + fwVersion : "";
+    if (memFree > 0) text += (text ? " " : "") + "(" + Math.round(memFree / 1024) + " KB free)";
+    document.getElementById("fwVersion").innerText = text;
+}
 async function loadVersion(){
     try {
         let r = await fetch("/version");
-        if (r.ok) document.getElementById("fwVersion").innerText = "firmware v" + await r.text();
+        if (r.ok){ fwVersion = await r.text(); showVersion(); }
     } catch(e) {
         console.error("Failed to load version", e);
     }
@@ -579,6 +590,13 @@ async function pollStatus(){
         logVersion = s.lv;
 
         scriptRunning = s.running === 1;
+        if (s.mem !== undefined){
+            let now = Date.now();
+            memSamples.push([now, s.mem]);
+            while (memSamples.length && memSamples[0][0] < now - MEM_WINDOW_MS) memSamples.shift();
+            let best = Math.max(...memSamples.map(x => x[1]));
+            if (best !== memFree){ memFree = best; showVersion(); }
+        }
         btnG.disabled = !scriptRunning;
         btnH.disabled = !scriptRunning;
 
