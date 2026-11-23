@@ -171,6 +171,11 @@ button.ctl {
     padding:0 10px;
     flex:0 0 auto;
 }
+/* Ausrichtung der Matrix (Drehung im Uhrzeigersinn) */
+#ledRot {
+    height:30px;
+    font-size:14px;
+}
 /* Zustand der Matrix rechts neben dem LED-Button */
 #ledState {
     margin-left:auto;
@@ -337,6 +342,12 @@ label.auto-row input, .auto-row input {
             </div>
             <div class="ctl-row">
                 <button class="ctl" onclick="resetESP()">ESP Reset</button>
+                <label class="auto-row" title="Orientation of the LED matrix (rotate clockwise)">LED rotation
+                    <select id="ledRot" title="Orientation of the LED matrix (rotate clockwise)" onchange="setRotation(this.value)">
+                        <option value="0">0&deg;</option><option value="90">90&deg;</option>
+                        <option value="180">180&deg;</option><option value="270">270&deg;</option>
+                    </select>
+                </label>
             </div>
         </div>
     </div>
@@ -458,6 +469,32 @@ async function loadAutostart(){
     }
 }
 window.addEventListener("load", loadAutostart);
+
+// Ausrichtung der LED-Matrix: Drehung im Uhrzeigersinn, auf dem ESP gespeichert.
+// Die Vorschau hier bleibt aufrecht, gedreht werden nur die echten LEDs.
+const ledRot = document.getElementById("ledRot");
+async function loadRotation(){
+    try {
+        let r = await fetch("/rotation");
+        ledRot.value = String((await r.json()).rotation);
+    } catch(e) {
+        console.error("Failed to load rotation", e);
+    }
+}
+window.addEventListener("load", loadRotation);
+async function setRotation(deg){
+    try {
+        let r = await fetch("/rotation?deg=" + deg, {method:"POST"});
+        if (r.ok){
+            showStatus(statusBox, "LED orientation: " + (await r.json()).rotation + "\u00b0", false);
+            return;
+        }
+        showStatus(statusBox, "Error " + r.status + ": " + await r.text(), true);
+    } catch(e) {
+        showStatus(statusBox, "Error: no connection to ESP (" + e + ")", true);
+    }
+    loadRotation();
+}
 
 // Firmware-Version und freier Speicher des ESP klein neben dem Titel: "v1.9 (85 KB free)".
 // Der Wert schwankt stark (Muell bis zur naechsten automatischen Muellabfuhr); angezeigt

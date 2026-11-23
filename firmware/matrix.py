@@ -1,12 +1,11 @@
-# LED-Matrix: Strombegrenzung, Lese-Task (zeitkritisch), Schlafen/Wecken,
+# LED-Matrix: Lese-Task (zeitkritisch), Schlafen/Wecken,
 # Start/Stop/Loeschen, Farben aus Userscripts.
 import uasyncio as asyncio
-from machine import Pin
 import machine, time, sys
-import neopixel
 
-from hw import out_1, GPIO_IN_REG, LED_PIN
-from core import log, exception_text
+from hw import out_1, GPIO_IN_REG
+import core
+from core import log, exception_text, ROWS, COLS
 
 # ================= LED MATRIX =================
 # Matrix-Protokoll v2 (siehe Matrix-Protokoll.md):
@@ -24,8 +23,6 @@ after_wake = False           # gerade geweckt: das naechste REQ steht bis zu WAK
 wake_prev = 0                # Schlaf: letzter gesehener Wert der Ausgaenge (15 = altes F, weckt nicht)
 CONSOLE_MATRIX = False       # Bild nach jedem Neuaufbau auf die Konsole (/status?con=1 schaltet ein; bremst)
 
-ROWS = 8
-COLS = 8
 NUM_LEDS = ROWS * COLS
 
 # Timing-Parameter (us)
@@ -43,64 +40,8 @@ SLEEP_RELEASE_US = 40000     # nach ACK 15 so lange warten, bis der 2090 das F w
                              # steht es laenger, ist es ein Wecksignal (der ESP bleibt wach)
 WAKE_REQ_US = 200000         # erstes REQ nach dem Wecken: so lange auf das ACK warten
 
-# ----- Helligkeit begrenzen (Versorgung ueber USB) -----
-# Jede LED zieht je Farbkanal bei 255 etwa 20 mA. Ueber LED_MAX_MA wird das
-# ganze Bild beim Schreiben gleichmaessig dunkler; die gesetzten Werte bleiben.
-# Am PC-Port (500 mA) nicht erhoehen; mit eigenem Netzteil (>= 2 A) bis ca. 1000.
-LED_MAX_MA = 250
-LED_BUDGET = LED_MAX_MA * 255 // 20     # Summe aller Farbwerte (r+g+b ueber alle LEDs)
-
-class LimitedPixels:
-    """Wie neopixel.NeoPixel, aber write() haelt LED_MAX_MA ein (fuer Matrix und User-Scripts)."""
-
-    def __init__(self, pixels):
-        self._np = pixels
-        self.n = len(pixels)
-        self.version = 0                      # zaehlt jedes write() (Anzeige im Browser)
-
-    def __len__(self):
-        return self.n
-
-    def __setitem__(self, i, color):
-        self._np[i] = color
-
-    def __getitem__(self, i):
-        return self._np[i]
-
-    def fill(self, color):
-        self._np.fill(color)
-
-    def hex_rows(self):
-        """64 Farben als "rrggbb", oberste Zeile zuerst, je Zeile links nach rechts
-        (Verdrahtung np[x * 8 + y], y = 0 unten)."""
-        px = self._np
-        out = []
-        for y in range(ROWS - 1, -1, -1):
-            for x in range(COLS):
-                c = px[x * ROWS + y]
-                out.append("%02x%02x%02x" % (c[0], c[1], c[2]))
-        return "".join(out)
-
-    def write(self):
-        self.version += 1
-        px, n = self._np, self.n
-        total = 0
-        for i in range(n):
-            c = px[i]
-            total += c[0] + c[1] + c[2]
-        if total <= LED_BUDGET:
-            px.write()
-            return
-        k = LED_BUDGET * 256 // total       # Faktor * 256
-        saved = [px[i] for i in range(n)]
-        for i in range(n):
-            c = saved[i]
-            px[i] = ((c[0] * k) >> 8, (c[1] * k) >> 8, (c[2] * k) >> 8)
-        px.write()
-        for i in range(n):
-            px[i] = saved[i]                  # gesetzte Werte wiederherstellen
-
-np = LimitedPixels(neopixel.NeoPixel(Pin(LED_PIN), NUM_LEDS))
+# LED-Puffer mit Strombegrenzung und Ausrichtung: core.py (LimitedPixels)
+np = core.np
 
 M = matrix_draw.Matrix()     # Bitebene, Farbebene, Cursor, Farbe, Stapel
 matrix_dirty = True # initial

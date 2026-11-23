@@ -274,6 +274,8 @@ Auf diesem Muster lässt sich vieles aufbauen: Messwerte von einem Sensor, die U
 
 Die 8x8-LED-Matrix ist ein Sonderfall der Kommunikation über die Ein- und Ausgänge: Der Microtronic schickt Daten über seine vier Ausgänge, das ESP2090-Studio liest sie und zeichnet. Im Unterschied zu den [Userscripts](#userscripts-der-esp2090-als-peripherie) ist das Protokoll fest in die Firmware eingebaut. Auf dem 2090 läuft dafür eine besondere Senderoutine, auf dem ESP muss nur die Matrix eingeschaltet sein (**„LED on“** in der Weboberfläche). Was die Matrix zeigt, erscheint auch live in der Weboberfläche.
 
+Ist die Matrix gedreht eingebaut, stellt man unter **LED rotation** (neben **ESP Reset**) die passende Drehung ein: 0°, 90°, 180° oder 270° im Uhrzeigersinn. Das gilt sofort für die Matrix und für Userscripts und wird auf dem ESP gespeichert. Die Anzeige in der Weboberfläche bleibt aufrecht.
+
 Es gibt zwei Arten, die Matrix zu benutzen, und beide lassen sich in einem Programm mischen:
 
 - **Blockmodus:** Der 2090 schickt ein ganzes Bild: 16 Register mit je 4 Bit = 64 Pixel. So arbeitet z. B. die [BerlinUhr2090](https://github.com/rab-berlin/BerlinUhr2090).

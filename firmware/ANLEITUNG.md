@@ -107,6 +107,7 @@ WebREPL ist aktiv. Das Passwort steht in `webrepl_cfg.py` („ichbins“). Bitte
 - **Einschaltreihenfolge:** zuerst die Erweiterung (ESP), dann den 2090. Beim Ausschalten umgekehrt.
 - **Wichtig:** Der Ordner `userscripts` muss auf dem ESP existieren, sonst funktionieren Speichern, Laden und Dateiliste in der Weboberfläche nicht. Fehlt er, in Thonny im Bereich *MicroPython-Gerät* per Rechtsklick → *Neuer Ordner…* (englisch: *New directory…*) anlegen und `userscripts` nennen.
 - **Autostart:** Das Häkchen *Autostart script* unter der Dateizeile startet das Script aus dem Namensfeld nach dem Einschalten, das Häkchen *Autostart* neben *LED on* die LED-Matrix. Gespeichert wird das in `autostart.json` auf dem ESP. Macht ein Autostart-Script Probleme: in Thonny verbinden (das unterbricht `main.py`) und `autostart.json` auf dem ESP löschen.
+- **LED rotation:** Ist die LED-Matrix gedreht eingebaut, neben *ESP Reset* die passende Drehung wählen (0°, 90°, 180°, 270° im Uhrzeigersinn). Das gilt sofort für Matrix-Programme und Userscripts und wird in `rotation.json` auf dem ESP gespeichert. Die Vorschau in der Weboberfläche bleibt aufrecht.
 - **Userscripts** laufen neben Webserver und Matrix. Vor dem Start prüft der ESP sie und startet sie nicht, wenn
   - eine `while`- oder `for`-Schleife kein `await` enthält (Ausnahme: `for ... in range(n)` mit fester Zahl bis 64),
   - `time.sleep` / `sleep_ms` / `sleep_us` oder `input()` vorkommt.
