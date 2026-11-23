@@ -296,6 +296,47 @@ def autostart_save(cfg):
     with open(AUTOSTART_FILE, "w") as f:
         json.dump(cfg, f)
 
+# ================= AUSRICHTUNG DER LED-MATRIX =================
+# rotation.json: {"rotation": 90}. Fehlt die Datei, gilt 0 Grad. Gedreht wird erst
+# beim Schreiben auf die LEDs (core.LimitedPixels), fuer Matrix und Userscripts.
+ROTATION_FILE = "rotation.json"
+
+def rotation_load():
+    try:
+        with open(ROTATION_FILE) as f:
+            deg = json.load(f).get("rotation", 0)
+    except (OSError, ValueError, AttributeError):
+        deg = 0
+    if not core.np.set_rotation(deg):
+        core.np.set_rotation(0)
+
+@app.get("/rotation")
+async def rotation_get(req):
+    return {"rotation": core.np.rotation}
+
+# Aendern per POST: ?deg=0|90|180|270 (im Uhrzeigersinn), gilt sofort
+@app.post("/rotation")
+async def rotation_set(req):
+    try:
+        deg = int(req.args.get("deg", ""))
+    except ValueError:
+        deg = -1
+    if not core.np.set_rotation(deg):
+        return "Rotation: only 0, 90, 180 or 270 allowed", 400
+    try:
+        if deg:
+            with open(ROTATION_FILE, "w") as f:
+                json.dump({"rotation": deg}, f)
+        else:
+            try:
+                os.remove(ROTATION_FILE)
+            except OSError:
+                pass
+    except OSError as e:
+        return "Rotation not saved: " + str(e), 500
+    core.np.write()                     # aktuelles Bild sofort in der neuen Lage
+    return {"rotation": deg}
+
 @app.get("/version")
 async def version(req):
     return FW_VERSION
@@ -350,6 +391,8 @@ async def autostart_task():
 
 # ================= MAIN =================
 async def main_task():
+
+    rotation_load()
 
     asyncio.create_task(core.buzzer_play_task())
     asyncio.create_task(wifi_task())
