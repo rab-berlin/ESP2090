@@ -395,13 +395,14 @@ Im Zeichenmodus besteht ein Befehl aus dem ACK und ein oder zwei Nibbles:
 | 6 | x, y | Cursor 2 setzen, gefülltes Rechteck zwischen Cursor 1 und 2 |
 | 7 | x, y | Cursor 2 setzen, Rechteck als Rahmen |
 | 8 | x, y | Cursor 2 setzen, Linie; danach Cursor 1 = Cursor 2 (Linienzug) |
+| 9 | r, a | Kreis oder Raute um Cursor 1 mit Radius r (siehe „Kreis und Raute“) |
 | 10 | k, w | die vier Pixel, die im Blockmodus Register k darstellt, auf w setzen |
 | 11 | r | Bit- und Farbmatrix schieben: 0 links, 1 rechts, 2 hoch, 3 runter; +8 mit Umlauf |
 | 13 | w | Stapel für Farb- und Bitmatrix: push, pop, peek, leeren (siehe unten) |
 | 14 | f | aktive Farbe 0–15 wählen (siehe Palette) |
 | 15 | – | schlafen: kein REQ mehr, bis ein gehaltenes F weckt (siehe „Schlafen und Wecken“). Das Bild bleibt stehen |
 
-ACK 15 hat kein Nibble. ACK 2, 5, 9 und 12 haben bisher keine Bedeutung und werden ignoriert. Hier kommen später weitere Zeichenbefehle dazu.
+ACK 15 hat kein Nibble. ACK 2, 5 und 12 haben bisher keine Bedeutung und werden ignoriert. Hier kommen später weitere Zeichenbefehle dazu.
 
 **Koordinaten:** x ist die Spalte (0 links bis 7 rechts), y die Zeile (0 unten bis 7 oben).
 
@@ -419,6 +420,18 @@ ACK 15 hat kein Nibble. ACK 2, 5, 9 und 12 haben bisher keine Bedeutung und werd
 Im Bild: `ACK 4` mit x = 1, y = 1 setzt Cursor 1, dann zeichnet `ACK 6` mit x = 4+8, y = 3 das gefüllte Rechteck in der aktiven Farbe. Die blaue Linie entsteht aus `ACK 4` (6, 0) und `ACK 8` (7+8, 4). Cursor 1 wird für eine Figur ohne +8 gesetzt (Zeichenart 0): So leuchtet vorher kein einzelnes Pixel auf, und die Figur bringt den Eckpunkt mit. Nur für einen einzelnen Punkt bekommt `ACK 4` selbst das +8.
 
 Bei ACK 3 ist das Nibble direkt die Zeichenart: `ACK 3, 1` füllt die ganze Matrix in der aktiven Farbe, `ACK 3, 3` schaltet alle Pixel aus, ohne die Farben zu vergessen.
+
+**Kreis und Raute (ACK 9):** Der Mittelpunkt ist Cursor 1, also vorher Cursor 1 setzen – für eine Figur ohne leuchtenden Mittelpunkt mit Zeichenart 0. Das erste Nibble ist der Radius r (0–15, 0 = ein einzelner Punkt). Das zweite Nibble ist wie bei ACK 3 direkt die Zeichenart, dazu kommen zwei Schalter:
+
+| Wert im 2. Nibble | Bedeutung |
+|---|---|
+| 0–3 | Zeichenart (wie bei ACK 3) |
+| +4 | gefüllt statt nur Rand |
+| +8 | Raute statt Kreis |
+
+Beispiele mit Cursor 1 bei (3, 3): `ACK 9, 3, 1` zeichnet einen Kreisring mit Radius 3, `ACK 9, 3, 5` einen gefüllten Kreis, `ACK 9, 2, 9` eine Raute aus 8 Pixeln, `ACK 9, 2, 13` eine gefüllte Raute, `ACK 9, 3, 7` blendet einen gefüllten Kreis aus. Die Raute ist ein auf die Spitze gestelltes Quadrat: alle Pixel, die waagerecht plus senkrecht genau r Schritte vom Mittelpunkt entfernt sind.
+
+Was außerhalb der Matrix liegt, wird einfach nicht gezeichnet. Deshalb sind auch Radien über 7 sinnvoll, wenn der Mittelpunkt am Rand liegt: Um (0, 0) läuft der Kreis mit Radius 7 durch (0, 7), (5, 5) und (7, 0), mit Radius 9 durch (7, 6) und (6, 7), mit Radius 10 trifft er nur noch die Ecke (7, 7). Eine Schleife über r = 0 … 10 lässt so eine Welle aus der Ecke über die ganze Matrix laufen. Die Cursor bleiben unverändert.
 
 **Palette** (für ACK 14, Farbnummer f):
 
