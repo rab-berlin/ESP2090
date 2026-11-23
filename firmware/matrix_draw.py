@@ -16,6 +16,9 @@
 #   6  x, y         Cursor 2 / Rechteck gefuellt
 #   7  x, y         Cursor 2 / Rechteck als Rahmen
 #   8  x, y         Cursor 2 / Linie, danach Cursor 1 = Cursor 2
+#   9  r, a         Kreis um Cursor 1, Radius r (0-15, 0 = Punkt), Zeichenart
+#                   a (0-3), +4 gefuellt, +8 Raute statt Kreis. Teile ausserhalb
+#                   der Matrix werden nicht gezeichnet. Cursor bleiben.
 #   10 k, w         Nibble k der Bitebene = w
 #   11 r            schieben: 0 links, 1 rechts, 2 hoch, 3 runter (+8 mit Umlauf)
 #   13 w            Stapel: Bit 0 Farbmatrix, Bit 1 Bitmatrix; Bit 2-3 Aktion:
@@ -59,7 +62,7 @@ COLOR_NAMES = {
 }
 
 # Anzahl der Datennibbles je ACK (0 = Code ohne Bedeutung)
-NIBBLES = (0, 16, 0, 1, 2, 0, 2, 2, 2, 0, 2, 1, 0, 1, 1, 0)
+NIBBLES = (0, 16, 0, 1, 2, 0, 2, 2, 2, 2, 2, 1, 0, 1, 1, 0)
 
 OFF = (0, 0, 0)
 
@@ -124,6 +127,44 @@ class Matrix:
                 err += dx
                 y += sy
 
+    def _circle(self, r, art, filled, raute=False):
+        """Kreis (Mittelpunkt-Verfahren) oder Raute (|dx| + |dy| = r) um Cursor 1.
+        Jedes Pixel genau einmal; was ausserhalb der Matrix liegt, faellt weg."""
+        cx, cy = self.c1x, self.c1y
+        rand = set()                        # Randpunkte relativ zur Mitte
+        if raute:
+            for a in range(r + 1):
+                b = r - a
+                rand.add((a, b))
+                rand.add((-a, b))
+                rand.add((a, -b))
+                rand.add((-a, -b))
+        x, y, d = r, 0, 1 - r
+        while x >= y and not raute:
+            for a, b in ((x, y), (y, x)):
+                rand.add((a, b))
+                rand.add((-a, b))
+                rand.add((a, -b))
+                rand.add((-a, -b))
+            y += 1
+            if d < 0:
+                d += 2 * y + 1
+            else:
+                x -= 1
+                d += 2 * (y - x) + 1
+        if filled:                          # je Zeile vom linken bis zum rechten Rand
+            breite = {}
+            for a, b in rand:
+                if breite.get(b, -1) < a:
+                    breite[b] = a
+            punkte = [(a, b) for b in breite for a in range(-breite[b], breite[b] + 1)]
+        else:
+            punkte = rand
+        for a, b in punkte:
+            px, py = cx + a, cy + b
+            if 0 <= px < COLS and 0 <= py < ROWS:
+                self._apply(py * COLS + px, art)
+
     def _shift(self, r):
         d, wrap = r & 3, r & 8
         nb, nc = bytearray(N), bytearray(self.colors)
@@ -182,6 +223,10 @@ class Matrix:
                 else:
                     self._rect(art, ack == 6)
             return art != 0
+        if ack == 9:
+            v = data[1]
+            self._circle(data[0] & 15, v & 3, v & 4, v & 8)
+            return (v & 3) != 0
         if ack == 3:
             art = data[0] & 3
             for i in range(N):
