@@ -49,12 +49,11 @@ Vom einfachen Blinklicht über anpassbaren Zufallszahlengenerator, 2095-Tape-Emu
 
 Die Preise sind von AliExpress. Wer das alles frisch ordert, kommt ohne Platine für etwa 20 Euro weg - und hat danach noch viele Ersatzteile übrig. Ich bin aber sicher, dass du das meiste sowieso schon vorrätig hast. Lediglich den ESP, die Metallösen, die Platine und wahrscheinlich die LED-Matrix musst du wohl bestellen.
 
-**Nachtrag 11/2026:** Inzwischen gibt es leider neue Zölle auf Lieferungen aus China, und das trifft unser Hobby sehr: 3 Euro pauschal auf jede *Warengruppe*. Widerstände, Kondensatoren, ICs, Steckleisten usw. sind verschiedene Gruppen – also jeweils 3 Euro obendrauf. Bei den Kleinteil-Sortimenten oben ist das schnell mehr als der Warenwert. Man muss abwarten, ob das noch besser wird oder ob andere günstige Bezugsquellen kommen – aber die wenigen Lötkolbenverrückten haben nun mal keine Lobby.
-
 Du kannst natürlich auch ohne IC-Sockel und Buchsenleisten alles direkt auf die Platine löten. Ich persönlich hab´s aber lieber flexibel - versuch mal, einen falsch eingelöteten oder nicht funktionierenden IC wieder auszulöten...
 
 Wer es richtig schön will, druckt sich noch einen passenden Busch-Bauteilträger dazu aus. ~~Daran arbeite ich noch...~~ [SCAD-](https://github.com/rab-berlin/ESP2090/blob/main/3d/ESP2090_mit_Zapfen.scad) und STL-Datei. Zur Befestigung der Platine am Träger brauchst du vier winzige Schrauben M2 und passende Muttern.
 
+**Nachtrag 11/2026:** Inzwischen gibt es leider neue Zölle auf Lieferungen aus China, und das trifft unser Hobby sehr: 3 Euro pauschal auf jede *Warengruppe*. Widerstände, Kondensatoren, ICs, Steckleisten usw. sind verschiedene Gruppen – also jeweils 3 Euro obendrauf. Bei den Kleinteil-Sortimenten oben ist das schnell mehr als der Warenwert. Man muss abwarten, ob das noch besser wird oder ob andere günstige Bezugsquellen kommen – aber die wenigen Lötkolbenverrückten haben nun mal keine Lobby.
 
 ## Warum nur, warum?
 
